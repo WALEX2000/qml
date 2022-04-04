@@ -25,7 +25,7 @@ setup(
         "Topic :: MLOps",
         "License :: OSI Approved :: BSD License",
     ],
-    requires=read('Pipfile')
+    requires=read('Pipfile'),
     py_modules = ['cliInterface.py', 'src'],
     packages=find_packages(),
     entry_points = '''
