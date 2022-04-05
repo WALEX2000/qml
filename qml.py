@@ -2,13 +2,8 @@ import typer
 import click
 import os
 
-@click.command()
-@click.option('-n', '--name', type=str, help='Name of root project directory', default='Root_of_Project')
-def setup(name):
-    print("Commencing Setup...")
-
-    # -- Create folder structure --
-    mode = 0o777 #TODO Figure out what is the proper mode
+def setupFolderStructure(name):
+    mode = 0o777
     # Create Paths
     rootPath = os.path.join(os.getcwd(), name)
     dataPath = os.path.join(rootPath, 'data')
@@ -18,12 +13,17 @@ def setup(name):
     # Create Folders
     os.mkdir(rootPath, mode)
     os.mkdir(dataPath, mode)
+    os.mkdir(srcPath, mode)
     os.mkdir(mlPrimitivesPath, mode)
     os.mkdir(pipelinesPath, mode)
 
+@click.command()
+@click.option('-n', '--name', type=str, help='Name of root project directory', default='Root_of_Project')
+def setup(name):
+    print("Commencing Setup...")
+    setupFolderStructure(name)
+    # -- Add Template Files --
     # -- Initialize git --
-
-
     # -- Initialize DVC --
 
 
