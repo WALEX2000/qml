@@ -8,6 +8,8 @@ typer = "*"
 typer-cli = "*"
 twine = "*"
 wheel = "*"
+click = "*"
+qml = {editable = true, path = "."}
 
 [dev-packages]
 
