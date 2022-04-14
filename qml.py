@@ -2,12 +2,10 @@ import string
 import typer
 import click
 import os
-import subprocess
 from subprocess import Popen, PIPE, STDOUT
 import sys
 import shutil
 import io
-from types import SimpleNamespace
 from collections import namedtuple
 
 def setupProjectStructure(name):
@@ -24,9 +22,11 @@ def setupProjectStructure(name):
     os.mkdir(srcPath, mode)
     os.mkdir(mlPrimitivesPath, mode)
     os.mkdir(pipelinesPath, mode)
-    # Add Template files
+    # Add Pipfiles
     pipfile = os.path.dirname(os.path.abspath(__file__)) + "/Templates/Pipfile"
     shutil.copy(pipfile, rootPath)
+    pipfileLock = os.path.dirname(os.path.abspath(__file__)) + "/Templates/Pipfile.lock"
+    shutil.copy(pipfileLock, rootPath)
     
     Paths = namedtuple('Paths', ['rootPath', 'dataPath', 'srcPath', 'mlPrimitivesPath', 'pipelinesPath'])
     return Paths(rootPath, dataPath, srcPath, mlPrimitivesPath, pipelinesPath)
@@ -49,11 +49,16 @@ def initDVC(projRoot: string):
 
 def initGit(projRoot: string):
     CLIexec('git init', projRoot)
-    CLIexec('git add *', projRoot)
 
 def gitCommit(message: string, projRoot: string):
+    CLIexec('git add *', projRoot)
     cmd = 'git commit -m "' + message + '"'
     CLIexec(cmd, projRoot)
+
+def addTemplateFiles(dataPath: string, rootPath: string):
+    dataFile = os.path.dirname(os.path.abspath(__file__)) + "/Templates/winequality-red.csv"
+    shutil.copy(dataFile, dataPath)
+    CLIexec('dvc add data/winequality-red.csv', rootPath)
 
 @click.command()
 @click.option('-n', '--name', type=str, help='Name of root project directory', default='Root_of_Project')
@@ -61,13 +66,14 @@ def setup(name):
     print("Commencing Setup...")
     print('\n-> Creating Project Structure')
     paths = setupProjectStructure(name)
-    # -- Initialize git --
     print('\n-> Installing Dependencies')
     installDependencies(paths.rootPath)
     print('\n-> Initiating Git')
     initGit(paths.rootPath)
     print('\n-> Initiating DVC')
     initDVC(paths.rootPath)
+    print('\n-> Adding Template Files')
+    addTemplateFiles(paths.dataPath, paths.rootPath)
     print('\n-> Commiting setup to Git')
     gitCommit('Setup Project!', paths.rootPath)
     print("\n...Setup Complete!")
