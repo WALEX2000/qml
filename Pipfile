@@ -10,8 +10,14 @@ twine = "*"
 wheel = "*"
 click = "*"
 qml = {editable = true, path = "."}
+pandas = "*"
+pandas-profiling = "*"
 
 [dev-packages]
+black = "*"
 
 [requires]
 python_version = "3"
+
+[pipenv]
+allow_prereleases = true
