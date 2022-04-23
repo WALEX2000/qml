@@ -62,6 +62,8 @@ def gitCommit(message: string, projRoot: string):
 def addTemplateFiles(dataPath: string, rootPath: string):
     dataFile = getTemplateFilePath('winequality-red.csv')
     shutil.copy(dataFile, dataPath)
+    dataFileReport = getTemplateFilePath('winequality-red.csv.pp')
+    shutil.copy(dataFileReport, dataPath)
     CLIexec('dvc add data/winequality-red.csv', rootPath)
 
 def setupProject(name):
