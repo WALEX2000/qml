@@ -42,9 +42,29 @@ def CLIexec(cmd: string, execDir: string):
         if(char == ''):
             break
         print(char, end='')
+    
+    reader.close()
+
+def CLIcomm(cmd: string, execDir: string, inputs: list[str]):
+    p = Popen(cmd, stdout = PIPE, stderr = STDOUT, stdin=PIPE, shell = True, cwd=execDir)
+    reader = io.TextIOWrapper(p.stdout, encoding=None, newline='')
+    writer = io.TextIOWrapper(p.stdin, line_buffering=True, newline=None)
+    iterator = 0
+    while not p.stdout.closed and not p.stdin.closed:
+        if(iterator < len(inputs)):
+            res = writer.write(inputs[iterator] + '\n')
+            if(res == len(inputs[iterator]) + 1):
+                iterator += 1
+        char = reader.read(1)
+        if(char == ''):
+            break
+        else:
+            print(char, end='')
+    
+    reader.close()
+    writer.close()
 
 def installDependencies(projRoot: string):
-    # Install dependencies with Pipenv
     CLIexec('pipenv install', projRoot)
 
 def initDVC(projRoot: string):
@@ -66,6 +86,9 @@ def addTemplateFiles(dataPath: string, rootPath: string):
     shutil.copy(dataFileReport, dataPath)
     CLIexec('dvc add data/winequality-red.csv', rootPath)
 
+def initGreatExpectations(projRoot: string):
+    CLIcomm('great_expectations init', projRoot, ["y", "banana"])
+
 def setupProject(name):
     print("Commencing Setup...")
     print('\n-> Creating Project Structure')
@@ -76,6 +99,8 @@ def setupProject(name):
     initGit(paths.rootPath)
     print('\n-> Initiating DVC')
     initDVC(paths.rootPath)
+    print('\n-> Initiating Great Expectations')
+    initGreatExpectations(paths.rootPath)
     print('\n-> Adding Template Files')
     addTemplateFiles(paths.dataPath, paths.rootPath)
     print('\n-> Commiting setup to Git')

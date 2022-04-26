@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 dvc = {extras = ["gdrive"], version = "*"}
+great-expectations = "*"
+prompt-toolkit = "*"
 
 [dev-packages]
 ipykernel = "*"

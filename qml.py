@@ -6,7 +6,7 @@ from modules import project_initializer
 
 @click.command()
 @click.option('-n', '--name', type=str, help='Name of root project directory', default='Root_of_Project')
-def setup(name):
+def init(name):
     project_initializer.setupProject(name)
 
 @click.command()
@@ -28,7 +28,7 @@ def callback():
     """
 
 typer_click_object = typer.main.get_command(app)
-typer_click_object.add_command(setup, "setup")
+typer_click_object.add_command(init, "init")
 typer_click_object.add_command(stuff, "stuff")
 typer_click_object.add_command(inspect, "inspect")
 

@@ -12,6 +12,7 @@ click = "*"
 qml = {editable = true, path = "."}
 pandas = "*"
 pandas-profiling = "*"
+great-expectations = "*"
 
 [dev-packages]
 black = "*"
