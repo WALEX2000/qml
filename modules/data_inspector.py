@@ -1,83 +1,42 @@
 import os
-import pandas as pd
-import pathlib
 import hashlib
-from pandas_profiling import ProfileReport
 import tempfile
 from modules.cli_utils import CLIexec
-import webbrowser
 import great_expectations as ge
 from great_expectations import DataContext
-import ruamel.yaml
+import yaml
+import webbrowser
 
-def checkIfValidDF(filename, fileExtension):
-    df = pd.DataFrame()
-    supportedFileTypes = ('.csv', '.json', '.pickle', '.pkl', '.parquet', '.fea', '.feather')
+metaInfo = {
+  "profile-hash": "",
+}
 
-    # Check if it is a valid file (accepted by pandas)
-    if(not fileExtension.endswith(supportedFileTypes)):
-        print("ERROR: Unsupported file extension detected: '" + fileExtension + "'")
-        print("These are the supported extensions:")
-        print(supportedFileTypes)
-        return False
-    elif(fileExtension == '.csv'):
-        df = pd.read_csv(filename)
-    elif(fileExtension == '.json'):
-        df = pd.read_json(filename, typ='frame')
-    elif(fileExtension == '.pickle' or fileExtension == '.pkl'):
-        df = pd.read_pickle(filename)
-    elif(fileExtension == '.parquet'):
-        df = pd.read_parquet(filename)
-    elif(fileExtension == '.fea' or fileExtension == '.feather'):
-        df = pd.read_feather(filename)
-    
-    # Check if df has been properly instantiated
-    if (not isinstance(df, pd.DataFrame)):
-        print("ERROR: Couldn't read DataFrame from file '" + filename + "'")
-        print("Please make  sure that '" + filename + "' contains a valid DataFrame")
-        return False
-    
-    return df
+def hashFile(filename):
+   """"This function returns the SHA-1 hash
+   of the file passed into it"""
+   h = hashlib.sha1()
+   with open(filename,'rb') as file:
+       chunk = 0
+       while chunk != b'':
+           chunk = file.read(1024)
+           h.update(chunk)
 
-def generateReportProfile(data, name):
-    def handleUnknownErrors(e):
-        print("An Unknown Error Occured:")
-        print(e)
+   return h.hexdigest()
 
-    profileName = name + " Dataset Report"
-    profile = None
-    try:
-        profile = ProfileReport(data, title=profileName, minimal=True)
-        profile.to_html()
-    except IndexError:
-        print("Full Profile can't be generated on this dataset due to an unknwon issue")
-        print("Generating Min Profile instead")
+def getYAML(filePath):
+    if(not  os.path.exists(filePath)): return None
+    with open(filePath, 'r') as file:
         try:
-            profile = ProfileReport(data, title=profileName, minimal=True)
-            profile.to_html()
-        except Exception as e:
-            handleUnknownErrors(e) 
-            return False   
-    except Exception as e:
-        handleUnknownErrors(e)
-        return False
+            return yaml.safe_load(file)
+        except yaml.YAMLError as exc:
+            print("An Unkexpected error occurred while loading " + filePath)
+            return None
 
-    """ TODO
-    datasetName = "data"
-    context: DataContext = ge.get_context()
-    profile.to_expectation_suite(suite_name=datasetName+'_expSuite', data_context=context, build_data_docs=False, run_validation=False, save_suite=False)
-    """
-    return profile
-
-def displayReport(profile: ProfileReport):
-    with tempfile.NamedTemporaryFile('w', delete=False, suffix='.html') as f:
-        url = 'file://' + f.name
-        f.write(profile.html)
-    webbrowser.open(url)
-
-def saveProfile(profile: ProfileReport, filename):
-    profileFilename = "./" + filename + ".pp"
-    profile.dump(profileFilename)
+def storeYAML(filePath, dict):
+    mode = 'w'
+    if(not os.path.exists(filePath)): mode = 'x'
+    with open(filePath, mode) as file:
+        yaml.dump(dict, file)
 
 def addMetadataToDVC(filename):
     dvcPath = filename + ".dvc"
@@ -87,46 +46,38 @@ def addMetadataToDVC(filename):
     else:
         print("WARNING: The data file you are inspecting is not currently being tracked by DVC.\nPlease consider adding ti to DVC tracking.")
 
-def hashFile(filename):
-   """"This function returns the SHA-1 hash
-   of the file passed into it"""
-   # make a hash object
-   h = hashlib.sha1()
-   # open file for reading in binary mode
-   with open(filename,'rb') as file:
-       # loop till the end of the file
-       chunk = 0
-       while chunk != b'':
-           # read only 1024 bytes at a time
-           chunk = file.read(1024)
-           h.update(chunk)
-
-   # return the hex representation of digest
-   return h.hexdigest()
-
-def inspectData(filename, args):
-    #Check if profiling report already exists
-    #If it does exist, just display it
-    #If it doesn't exist, generate and display it
-    #If there are args, use them to generate a new report
-        #After generating, save over the previous report, if there ever was one
-    (filePathHead, filePathTail) = os.path.split(filename.lower())
+def inspectData(filename: str, args: str):
+    (filePathHead, filePathTail) = os.path.split(filename.lower()) # Head is path info, tail is name info
     datasetName, fileExtension = os.path.splitext(filePathTail)
     profilePath = filePathHead + '/dataConf/' + datasetName + '-profile.html'
+    metaPath = filePathHead + '/dataConf/' + datasetName + '-qmlMeta.yaml'
     profileTitle = "'" + filePathTail + " Profile Report'"
-
-    profilingCommand = 'pandas_profiling ' + filename + ' ' + profilePath + ' -m --infer_dtypes --title ' + profileTitle
-    CLIexec(profilingCommand)
-
+    profilingCommand = 'pandas_profiling ' + filename + ' ' + profilePath + ' --title ' + profileTitle
     hash = hashFile(filename)
+    # Check if file has meta information and get it if it exists
+    datasetMeta = getYAML(metaPath)
+    if(datasetMeta is None):
+        print("Dataset meta information couldn't be found. Generating new meta information")
+        datasetMeta = metaInfo
 
+    if(len(args) == 1):
+        profilingCommand += ' -m'
+        if(datasetMeta['profile-hash'] != hash or not os.path.exists(profilePath)):
+            print("Profile hash is outdated. Generating new profile report..")
+            CLIexec(profilingCommand)
+            datasetMeta['profile-hash'] = hash
+        else:
+            print("Profile found. Rendering HTML..")
+            url='file://' + str(os.path.abspath(profilePath))
+            webbrowser.open(url)
+            return
+    else:
+        profilingCommand += args
+        print("Custom arguments detected. Calling pandas-profiling CLI..")
+        CLIexec(profilingCommand)
+        datasetMeta['profile-hash'] = hash
     
-
-    # Save hash of file (without df) to either .dvc or .meta file
-    # When doing inspect, if hashes match, simply display the existing .html
-        # if hashes match, but no .html, regenerate .html
-        # if hashes don't match, then regen
-        # if args, then regen, regardless of hash (regen hash tho)
+    storeYAML(metaPath, datasetMeta)
 
     # Then, do this automatically with the wathchdog thingie
 
@@ -140,27 +91,3 @@ def inspectData(filename, args):
     jsonTmpFile.close()
     jsonContent
     """
-
-    """
-    dataFrame = checkIfValidDF(filename, fileExtension)
-    if(dataFrame is False): return
-    
-    pandasProfile = ProfileReport()
-    generateProfile = True
-    if(os.path.exists(profilePath)):
-        pandasProfile.load(profilePath)
-        dfProfile = ProfileReport(dataFrame)
-        if(dfProfile.df_hash == pandasProfile.df_hash):
-            generateProfile = False
-            print("Pre-Generated Report Found! Rendering...")
-    
-    if(generateProfile):
-        print("Starting Report Generation...")
-        pandasProfile = generateReportProfile(dataFrame, datasetName)
-        if(pandasProfile is False): return
-        saveProfile(pandasProfile, filename)
-        addMetadataToDVC(filename)
-
-    displayReport(pandasProfile)
-    """
-

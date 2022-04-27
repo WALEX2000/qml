@@ -16,7 +16,8 @@ def init(name):
 @click.option('--checkpoint', '-ch', is_flag=True, help='Generate a Great Expectations checkpoint for this dataset')
 @click.argument('args', nargs=-1, type=click.UNPROCESSED)
 def inspect_data(filename, checkpoint, args):
-    data_inspector.inspectData(filename, args)
+    parsedArgs = ' ' + ' '.join(args)
+    data_inspector.inspectData(filename, parsedArgs)
 
 @click.command()
 def stuff():
