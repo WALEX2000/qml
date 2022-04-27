@@ -9,14 +9,17 @@ from modules import project_initializer
 def init(name):
     project_initializer.setupProject(name)
 
-@click.command()
+@click.command(context_settings=dict(
+    ignore_unknown_options=True,
+))
 @click.argument('filename', type=click.Path(exists=True, dir_okay=False))
-def inspect(filename):
-    data_inspector.inspectData(filename)
+@click.option('--checkpoint', '-ch', is_flag=True, help='Generate a Great Expectations checkpoint for this dataset')
+@click.argument('args', nargs=-1, type=click.UNPROCESSED)
+def inspect_data(filename, checkpoint, args):
+    data_inspector.inspectData(filename, args)
 
 @click.command()
 def stuff():
-    print("Hey")
     example_module.exampleModule()
 
 
@@ -30,7 +33,7 @@ def callback():
 typer_click_object = typer.main.get_command(app)
 typer_click_object.add_command(init, "init")
 typer_click_object.add_command(stuff, "stuff")
-typer_click_object.add_command(inspect, "inspect")
+typer_click_object.add_command(inspect_data, "inspect-data")
 
 @app.command()
 def cli():

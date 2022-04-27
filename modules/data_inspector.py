@@ -1,8 +1,14 @@
 import os
 import pandas as pd
+import pathlib
+import hashlib
 from pandas_profiling import ProfileReport
 import tempfile
+from modules.cli_utils import CLIexec
 import webbrowser
+import great_expectations as ge
+from great_expectations import DataContext
+import ruamel.yaml
 
 def checkIfValidDF(filename, fileExtension):
     df = pd.DataFrame()
@@ -41,10 +47,10 @@ def generateReportProfile(data, name):
     profileName = name + " Dataset Report"
     profile = None
     try:
-        profile = ProfileReport(data, title=profileName, explorative=True)
+        profile = ProfileReport(data, title=profileName, minimal=True)
         profile.to_html()
     except IndexError:
-        print("Full Profile can't be generated on this dataset due to an unknwon cause")
+        print("Full Profile can't be generated on this dataset due to an unknwon issue")
         print("Generating Min Profile instead")
         try:
             profile = ProfileReport(data, title=profileName, minimal=True)
@@ -56,7 +62,11 @@ def generateReportProfile(data, name):
         handleUnknownErrors(e)
         return False
 
-    # profile.to_expectation_suite() # TODO
+    """ TODO
+    datasetName = "data"
+    context: DataContext = ge.get_context()
+    profile.to_expectation_suite(suite_name=datasetName+'_expSuite', data_context=context, build_data_docs=False, run_validation=False, save_suite=False)
+    """
     return profile
 
 def displayReport(profile: ProfileReport):
@@ -77,16 +87,68 @@ def addMetadataToDVC(filename):
     else:
         print("WARNING: The data file you are inspecting is not currently being tracked by DVC.\nPlease consider adding ti to DVC tracking.")
 
-def inspectData(filename):
-    filenameBody, fileExtension = os.path.splitext(filename.lower())
-    profileFilename = "./" + filename + ".pp"
+def hashFile(filename):
+   """"This function returns the SHA-1 hash
+   of the file passed into it"""
+   # make a hash object
+   h = hashlib.sha1()
+   # open file for reading in binary mode
+   with open(filename,'rb') as file:
+       # loop till the end of the file
+       chunk = 0
+       while chunk != b'':
+           # read only 1024 bytes at a time
+           chunk = file.read(1024)
+           h.update(chunk)
+
+   # return the hex representation of digest
+   return h.hexdigest()
+
+def inspectData(filename, args):
+    #Check if profiling report already exists
+    #If it does exist, just display it
+    #If it doesn't exist, generate and display it
+    #If there are args, use them to generate a new report
+        #After generating, save over the previous report, if there ever was one
+    (filePathHead, filePathTail) = os.path.split(filename.lower())
+    datasetName, fileExtension = os.path.splitext(filePathTail)
+    profilePath = filePathHead + '/dataConf/' + datasetName + '-profile.html'
+    profileTitle = "'" + filePathTail + " Profile Report'"
+
+    profilingCommand = 'pandas_profiling ' + filename + ' ' + profilePath + ' -m --infer_dtypes --title ' + profileTitle
+    CLIexec(profilingCommand)
+
+    hash = hashFile(filename)
+
+    
+
+    # Save hash of file (without df) to either .dvc or .meta file
+    # When doing inspect, if hashes match, simply display the existing .html
+        # if hashes match, but no .html, regenerate .html
+        # if hashes don't match, then regen
+        # if args, then regen, regardless of hash (regen hash tho)
+
+    # Then, do this automatically with the wathchdog thingie
+
+    # Then, add great expectations support
+
+    # Then, add Autoviz support
+
+    """
+    jsonTmpFile = tempfile.NamedTemporaryFile(suffix='.json')
+    jsonContent = b''.join(jsonTmpFile.readlines())
+    jsonTmpFile.close()
+    jsonContent
+    """
+
+    """
     dataFrame = checkIfValidDF(filename, fileExtension)
     if(dataFrame is False): return
     
     pandasProfile = ProfileReport()
     generateProfile = True
-    if(os.path.exists(profileFilename)):
-        pandasProfile.load(profileFilename)
+    if(os.path.exists(profilePath)):
+        pandasProfile.load(profilePath)
         dfProfile = ProfileReport(dataFrame)
         if(dfProfile.df_hash == pandasProfile.df_hash):
             generateProfile = False
@@ -94,10 +156,11 @@ def inspectData(filename):
     
     if(generateProfile):
         print("Starting Report Generation...")
-        pandasProfile = generateReportProfile(dataFrame, filenameBody)
+        pandasProfile = generateReportProfile(dataFrame, datasetName)
         if(pandasProfile is False): return
         saveProfile(pandasProfile, filename)
         addMetadataToDVC(filename)
 
     displayReport(pandasProfile)
+    """
 

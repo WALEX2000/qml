@@ -1,5 +1,5 @@
 from pathlib import Path
+import os
 
 def exampleModule():
-    parentDir = Path(__file__).parents[1]
-    print(parentDir)
+    print(os.getcwd())
