@@ -13,6 +13,7 @@ qml = {editable = true, path = "."}
 pandas = "*"
 pandas-profiling = "*"
 great-expectations = "*"
+watchdog = "*"
 
 [dev-packages]
 black = "*"
