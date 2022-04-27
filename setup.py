@@ -1,8 +1,7 @@
-from importlib.metadata import requires
 import os
 from setuptools import setup, find_packages
 
-DEPENDENCIES = ['typer', 'click']
+DEPENDENCIES = ['typer', 'click', 'great_expectations', 'watchdog', 'pyyaml']
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -24,8 +23,10 @@ setup(
         "License :: OSI Approved :: BSD License",
     ],
     install_requires=DEPENDENCIES,
-    py_modules = ['qml'],
+    py_modules = ['qml', 'modules'],
     packages=find_packages(),
+    package_data={'Templates': ['*']},
+    include_package_data=True,
     entry_points = {
         'console_scripts': [
             'qml=qml:cli'

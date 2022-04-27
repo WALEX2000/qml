@@ -1,13 +1,24 @@
 import typer
 import click
+import os
 from modules import example_module
 from modules import data_inspector
 from modules import project_initializer
+from modules import auto_data_manager
+import time
 
 @click.command()
 @click.option('-n', '--name', type=str, help='Name of root project directory', default='Root_of_Project')
-def init(name):
-    project_initializer.setupProject(name)
+def start(name):
+    # If cwd or name is a qml env previously created, start the virtualenv and run the workers
+    paths: project_initializer.Paths = project_initializer.setupProject(name)
+    
+    auto_data_manager.watchData(paths.dataPath)
+    print("\n...Setup Complete!")
+    time.sleep(1)
+    os.system('/bin/bash --rcfile /Users/alexandrecarqueja/.local/share/virtualenvs/AAA-QpMT3r5O/bin/activate')
+    auto_data_manager.stopWatch()
+    print("Closed qml")
 
 @click.command(context_settings=dict(
     ignore_unknown_options=True,
@@ -23,7 +34,6 @@ def inspect_data(filename, checkpoint, args):
 def stuff():
     example_module.exampleModule()
 
-
 app = typer.Typer()
 @app.callback()
 def callback():
@@ -32,7 +42,7 @@ def callback():
     """
 
 typer_click_object = typer.main.get_command(app)
-typer_click_object.add_command(init, "init")
+typer_click_object.add_command(start, "start")
 typer_click_object.add_command(stuff, "stuff")
 typer_click_object.add_command(inspect_data, "inspect-data")
 

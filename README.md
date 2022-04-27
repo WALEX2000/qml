@@ -1,6 +1,8 @@
 # QML
 ## Setup
-To install for prod. run: pipx install . --force
+To install for prod. run: 
+    python setup.py sdist bdist_wheel (To build)
+    pipx install . --force (To install)
 To install for dev. run:
     pipenv shell
     then, just call qml (It's already on the path)

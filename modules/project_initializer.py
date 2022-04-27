@@ -4,6 +4,8 @@ from collections import namedtuple
 from pathlib import Path
 from . import cli_utils
 
+Paths = namedtuple('Paths', ['rootPath', 'dataPath', 'srcPath', 'mlPrimitivesPath', 'pipelinesPath', 'dataConfPath'])
+
 def getTemplateFilePath(fileName):
     parentDir = Path(__file__).parents[1]
     filePath = str(parentDir) + "/Templates/" + fileName
@@ -31,7 +33,6 @@ def setupProjectStructure(name):
     pipfileLock = getTemplateFilePath('Pipfile.lock')
     shutil.copy(pipfileLock, rootPath)
     
-    Paths = namedtuple('Paths', ['rootPath', 'dataPath', 'srcPath', 'mlPrimitivesPath', 'pipelinesPath', 'dataConfPath'])
     return Paths(rootPath, dataPath, srcPath, mlPrimitivesPath, pipelinesPath, dataConfPath)
 
 def installDependencies(projRoot: str):
@@ -75,4 +76,5 @@ def setupProject(name):
     addTemplateFiles(paths.dataPath, paths.rootPath)
     print('\n-> Commiting setup to Git')
     gitCommit('Setup Project!', paths.rootPath)
-    print("\n...Setup Complete!")
+
+    return paths

@@ -16,7 +16,6 @@ great-expectations = "*"
 watchdog = "*"
 
 [dev-packages]
-black = "*"
 
 [requires]
 python_version = "3"
