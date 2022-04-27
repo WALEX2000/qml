@@ -23,7 +23,6 @@ class DataHandler(FileSystemEventHandler):
         print(f"ok ok ok, someone moved {event.src_path} to {event.dest_path}")
 
 def watchData(dataFolder):
-    print("\n-> Setting up Bakcground Processes..")
     eventHandler = DataHandler()
     observer.schedule(eventHandler, path=dataFolder, recursive=False)
     observer.start()

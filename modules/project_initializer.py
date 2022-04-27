@@ -36,7 +36,9 @@ def setupProjectStructure(name):
     return Paths(rootPath, dataPath, srcPath, mlPrimitivesPath, pipelinesPath, dataConfPath)
 
 def installDependencies(projRoot: str):
+    cli_utils.CLIexec('export PIPENV_VENV_IN_PROJECT="enabled"')
     cli_utils.CLIexec('pipenv install', projRoot)
+    cli_utils.CLIexec('unset PIPENV_VENV_IN_PROJECT')
 
 def initDVC(projRoot: str):
     cli_utils.CLIexec('dvc init', projRoot)
@@ -76,5 +78,6 @@ def setupProject(name):
     addTemplateFiles(paths.dataPath, paths.rootPath)
     print('\n-> Commiting setup to Git')
     gitCommit('Setup Project!', paths.rootPath)
+    print("\n...Setup Complete!")
 
     return paths

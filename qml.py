@@ -11,12 +11,17 @@ import time
 @click.option('-n', '--name', type=str, help='Name of root project directory', default='Root_of_Project')
 def start(name):
     # If cwd or name is a qml env previously created, start the virtualenv and run the workers
-    paths: project_initializer.Paths = project_initializer.setupProject(name)
+    rootPath = os.getcwd() + '/' + name
+    dataPath = rootPath + '/data'
+    if(not os.path.exists(rootPath)):
+        project_initializer.setupProject(name)
     
-    auto_data_manager.watchData(paths.dataPath)
-    print("\n...Setup Complete!")
+    auto_data_manager.watchData(dataPath)
+    os.chdir(rootPath)
     time.sleep(1)
-    os.system('/bin/bash --rcfile /Users/alexandrecarqueja/.local/share/virtualenvs/AAA-QpMT3r5O/bin/activate')
+    print("\nStarted qml")
+    activateVenv = '/bin/bash --rcfile ' + rootPath + '/bin/activate'
+    os.system(activateVenv)
     auto_data_manager.stopWatch()
     print("Closed qml")
 
