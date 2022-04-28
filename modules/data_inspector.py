@@ -1,10 +1,9 @@
 import os
 import hashlib
 import tempfile
-from modules.cli_utils import CLIexec
+from modules.general_utils import CLIexec, storeYAML, getYAML
 import great_expectations as ge
 from great_expectations import DataContext
-import yaml
 import webbrowser
 
 metaInfo = {
@@ -22,21 +21,6 @@ def hashFile(filename):
            h.update(chunk)
 
    return h.hexdigest()
-
-def getYAML(filePath):
-    if(not  os.path.exists(filePath)): return None
-    with open(filePath, 'r') as file:
-        try:
-            return yaml.safe_load(file)
-        except yaml.YAMLError as exc:
-            print("An Unkexpected error occurred while loading " + filePath)
-            return None
-
-def storeYAML(filePath, dict):
-    mode = 'w'
-    if(not os.path.exists(filePath)): mode = 'x'
-    with open(filePath, mode) as file:
-        yaml.dump(dict, file)
 
 def addMetadataToDVC(filename):
     dvcPath = filename + ".dvc"

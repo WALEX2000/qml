@@ -1,6 +1,7 @@
 from subprocess import Popen, PIPE, STDOUT
 import io
 import os
+import yaml
 
 def CLIexec(cmd: str, execDir: str = os.getcwd()):
     p = Popen(cmd, stdout = PIPE, stderr = STDOUT, shell = True, cwd=execDir)
@@ -31,3 +32,18 @@ def CLIcomm(cmd: str, execDir: str, inputs: list[str]):
     
     reader.close()
     writer.close()
+
+def getYAML(filePath: str) -> dict:
+    if(not os.path.exists(filePath)): return None
+    with open(filePath, 'r') as file:
+        try:
+            return yaml.safe_load(file)
+        except yaml.YAMLError as exc:
+            print("An Unkexpected error occurred while loading " + filePath)
+            return None
+
+def storeYAML(filePath: str, dict: dict):
+    mode = 'w'
+    if(not os.path.exists(filePath)): mode = 'x'
+    with open(filePath, mode) as file:
+        yaml.dump(dict, file)

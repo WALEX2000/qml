@@ -1,0 +1,13 @@
+name: qml_pipeline
+version: 0.0.1
+setup:
+  structure:
+    - data:
+      - data_conf:
+    - src:
+      - ml_pipelines:
+      - ml_primitives:
+  processes:
+    - initGit
+    - initDVC
+    - initGreatExpectations

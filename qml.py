@@ -5,6 +5,7 @@ from modules import example_module
 from modules import data_inspector
 from modules import project_initializer
 from modules import auto_data_manager
+from modules.load_env import loadEnv
 import time
 
 @click.command()
@@ -37,7 +38,7 @@ def inspect_data(filename, checkpoint, args):
 
 @click.command()
 def stuff():
-    example_module.exampleModule()
+    loadEnv("./Templates/qml-env.yaml")
 
 app = typer.Typer()
 @app.callback()

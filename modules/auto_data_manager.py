@@ -5,7 +5,7 @@ from watchdog.events import FileMovedEvent
 from watchdog.events import FileDeletedEvent
 from watchdog.events import FileModifiedEvent
 from watchdog.events import FileMovedEvent
-from . import cli_utils
+from . import general_utils
 from . import data_inspector
 import os
 import time
@@ -30,7 +30,7 @@ class DataHandler(FileSystemEventHandler):
             if(filename.endswith('.tmp')):
                 return
             command = 'dvc add ' + event.src_path + ' --file ' + self.dataPath + '/dataConf/' + filename + '.dvc --no-commit'
-            cli_utils.CLIexec(command, self.rootPath)
+            general_utils.CLIexec(command, self.rootPath)
             # Create profile for dataFile
             data_inspector.inspectData(event.src_path)
 

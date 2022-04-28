@@ -2,7 +2,7 @@ import os
 import shutil
 from collections import namedtuple
 from pathlib import Path
-from . import cli_utils
+from . import general_utils
 
 Paths = namedtuple('Paths', ['rootPath', 'dataPath', 'srcPath', 'mlPrimitivesPath', 'pipelinesPath', 'dataConfPath'])
 
@@ -36,31 +36,31 @@ def setupProjectStructure(name):
     return Paths(rootPath, dataPath, srcPath, mlPrimitivesPath, pipelinesPath, dataConfPath)
 
 def installDependencies(projRoot: str):
-    cli_utils.CLIexec('export PIPENV_VENV_IN_PROJECT="enabled"')
-    cli_utils.CLIexec('pipenv install', projRoot)
-    cli_utils.CLIexec('unset PIPENV_VENV_IN_PROJECT')
+    general_utils.CLIexec('export PIPENV_VENV_IN_PROJECT="enabled"')
+    general_utils.CLIexec('pipenv install', projRoot)
+    general_utils.CLIexec('unset PIPENV_VENV_IN_PROJECT')
 
 def initDVC(projRoot: str):
-    cli_utils.CLIexec('dvc init', projRoot)
-    cli_utils.CLIexec('dvc config core.autostage true', projRoot)
+    general_utils.CLIexec('dvc init', projRoot)
+    general_utils.CLIexec('dvc config core.autostage true', projRoot)
 
 def initGit(projRoot: str):
-    cli_utils.CLIexec('git init', projRoot)
+    general_utils.CLIexec('git init', projRoot)
 
 def gitCommit(message: str, projRoot: str):
-    cli_utils.CLIexec('git add *', projRoot)
+    general_utils.CLIexec('git add *', projRoot)
     cmd = 'git commit -m "' + message + '"'
-    cli_utils.CLIexec(cmd, projRoot)
+    general_utils.CLIexec(cmd, projRoot)
 
 def addTemplateFiles(dataPath: str, rootPath: str):
     dataFile = getTemplateFilePath('winequality-red.csv')
     shutil.copy(dataFile, dataPath)
     dataFileReport = getTemplateFilePath('winequality-red.csv.pp')
     shutil.copy(dataFileReport, dataPath)
-    cli_utils.CLIexec('dvc add data/winequality-red.csv -f data/dataConf/winequality-red.csv.dvc', rootPath)
+    general_utils.CLIexec('dvc add data/winequality-red.csv -f data/dataConf/winequality-red.csv.dvc', rootPath)
 
 def initGreatExpectations(projRoot: str):
-    cli_utils.CLIcomm('great_expectations init', projRoot, ["y", "banana"])
+    general_utils.CLIcomm('great_expectations init', projRoot, ["y", "banana"])
 
 def setupProject(name):
     print("Commencing Setup...")
