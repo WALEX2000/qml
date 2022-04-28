@@ -1,11 +1,20 @@
-version: 0.0.2
+version: 0.0.4
 setup:
   structure:
     - data:
       - data_conf:
+      - winequality-red.csv
     - src:
       - ml_pipelines:
       - ml_primitives:
-      - hi.txt
+    - Pipfile
+    - Pipfile.lock
   run:
-    - example_module
+    - project_initializer
+inspect-data:
+  - data_inspector
+watchdog:
+  dirs:
+    - data:
+      on_create:
+        - data_inspector

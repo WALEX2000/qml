@@ -18,14 +18,12 @@ def start(name, env):
     dataPath = rootPath + '/data'
     if(not os.path.exists(rootPath)):
         if(loadEnv('qml_assets/' + env, rootPath) is None): return
-        return
-        # project_initializer.setupProject(name)
     
     auto_data_manager.watchData(dataPath, rootPath)
     os.chdir(rootPath)
     time.sleep(1)
     print("\nStarted qml")
-    activateVenv = '/bin/bash --rcfile ' + rootPath + '/bin/activate'
+    activateVenv = '/bin/bash --rcfile ' + rootPath + '/bin/activate' # TODO Fix! This is just creating a bash on top of current env. Not creating a new virtual environment
     os.system(activateVenv)
     auto_data_manager.stopWatch()
     print("Closed qml")

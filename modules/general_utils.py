@@ -2,6 +2,7 @@ from subprocess import Popen, PIPE, STDOUT
 import io
 import os
 import yaml
+import importlib
 
 def CLIexec(cmd: str, execDir: str = os.getcwd()):
     p = Popen(cmd, stdout = PIPE, stderr = STDOUT, shell = True, cwd=execDir)
@@ -47,3 +48,23 @@ def storeYAML(filePath: str, dict: dict):
     if(not os.path.exists(filePath)): mode = 'x'
     with open(filePath, mode) as file:
         yaml.dump(dict, file)
+
+def runProcesses(processes : list[str]):
+    for process in processes:
+        module = importlib.import_module('modules.' + process)
+        module.run()
+
+class ProjectSettings:
+    __instance = None
+    @staticmethod 
+    def getProjPath():
+        if ProjectSettings.__instance == None:
+            ProjectSettings()
+        return ProjectSettings.__instance.projPath
+    
+    def __init__(self, projPath):
+        if ProjectSettings.__instance != None:
+            raise Exception("This class is a singleton!")
+        else:
+            self.projPath = projPath
+            ProjectSettings.__instance = self
