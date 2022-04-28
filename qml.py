@@ -16,7 +16,7 @@ def start(name):
     if(not os.path.exists(rootPath)):
         project_initializer.setupProject(name)
     
-    auto_data_manager.watchData(dataPath)
+    auto_data_manager.watchData(dataPath, rootPath)
     os.chdir(rootPath)
     time.sleep(1)
     print("\nStarted qml")

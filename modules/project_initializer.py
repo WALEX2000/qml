@@ -57,7 +57,7 @@ def addTemplateFiles(dataPath: str, rootPath: str):
     shutil.copy(dataFile, dataPath)
     dataFileReport = getTemplateFilePath('winequality-red.csv.pp')
     shutil.copy(dataFileReport, dataPath)
-    cli_utils.CLIexec('dvc add data/winequality-red.csv', rootPath)
+    cli_utils.CLIexec('dvc add data/winequality-red.csv -f data/dataConf/winequality-red.csv.dvc', rootPath)
 
 def initGreatExpectations(projRoot: str):
     cli_utils.CLIcomm('great_expectations init', projRoot, ["y", "banana"])

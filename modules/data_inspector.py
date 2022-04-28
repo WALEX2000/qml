@@ -46,7 +46,7 @@ def addMetadataToDVC(filename):
     else:
         print("WARNING: The data file you are inspecting is not currently being tracked by DVC.\nPlease consider adding ti to DVC tracking.")
 
-def inspectData(filename: str, args: str):
+def inspectData(filename: str, args: str = ' '):
     (filePathHead, filePathTail) = os.path.split(filename.lower()) # Head is path info, tail is name info
     datasetName, fileExtension = os.path.splitext(filePathTail)
     profilePath = filePathHead + '/dataConf/' + datasetName + '-profile.html'
