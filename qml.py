@@ -10,12 +10,16 @@ import time
 
 @click.command()
 @click.option('-n', '--name', type=str, help='Name of root project directory', default='Root_of_Project')
-def start(name):
+@click.option('-env', type=str, help='Name of environment configuration file', default='qml-env.yaml')
+def start(name, env):
     # If cwd or name is a qml env previously created, start the virtualenv and run the workers
+    # else create the project from the default env
     rootPath = os.getcwd() + '/' + name
     dataPath = rootPath + '/data'
     if(not os.path.exists(rootPath)):
-        project_initializer.setupProject(name)
+        if(loadEnv('qml_assets/' + env, rootPath) is None): return
+        return
+        # project_initializer.setupProject(name)
     
     auto_data_manager.watchData(dataPath, rootPath)
     os.chdir(rootPath)

@@ -1,7 +1,6 @@
 from modules.general_utils import getYAML
 import os
 import importlib
-from modules import example_module
 
 def dictToDir(data : dict, path : str = ""):
     """dictToDir expects data to be a dictionary with one top-level key."""
@@ -25,17 +24,17 @@ def dictToDir(data : dict, path : str = ""):
     if isinstance(data, dict):
         return list(data.keys())[0]
 
-def loadEnv(envName : str):
+def loadEnv(envName : str, projPath : str):
     envDict = getYAML(envName)
-
-    envImports : list[str] = envDict.get('imports')
-    for module in envImports:
-        importlib.import_module('modules.' + module)
+    if(envDict is None):
+        print("Couldn't load environment from specified env..")
+        return None
 
     setupDict = envDict.get('setup')
     folderStructure = setupDict.get('structure')
-    dictToDir(folderStructure, "./experiments") #TODO change path from experiments to proper place
+    dictToDir(folderStructure, projPath)
 
-    setupProcesses : list[str] = setupDict.get('exec')
+    setupProcesses : list[str] = setupDict.get('run')
     for process in setupProcesses:
-        eval(process + '()')
+        module = importlib.import_module('modules.' + process)
+        module.run()

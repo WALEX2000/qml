@@ -25,7 +25,7 @@ setup(
     install_requires=DEPENDENCIES,
     py_modules = ['qml', 'modules'],
     packages=find_packages(),
-    package_data={'Templates': ['*']},
+    package_data={'qml_assets': ['*']},
     include_package_data=True,
     entry_points = {
         'console_scripts': [

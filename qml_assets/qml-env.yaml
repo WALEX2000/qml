@@ -1,0 +1,11 @@
+version: 0.0.2
+setup:
+  structure:
+    - data:
+      - data_conf:
+    - src:
+      - ml_pipelines:
+      - ml_primitives:
+      - hi.txt
+  run:
+    - example_module
