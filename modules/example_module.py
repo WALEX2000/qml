@@ -10,3 +10,6 @@ def exampleModule():
 def ex2():
     python_bin = "/Users/alexandrecarqueja/.local/share/virtualenvs/AAA-QpMT3r5O/bin/python"
     subprocess.Popen([python_bin, ])
+
+def hi():
+    print("HIIII")

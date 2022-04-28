@@ -1,13 +1,19 @@
 name: qml_pipeline
-version: 0.0.1
+version: 0.0.2
+imports:
+  - example_module
+  - auto_data_manager
+  - data_inspector
 setup:
   structure:
-    - data:
-      - data_conf:
-    - src:
-      - ml_pipelines:
-      - ml_primitives:
-  processes:
+    project_name:
+      - data:
+        - data_conf:
+      - src:
+        - ml_pipelines:
+        - ml_primitives:
+        - hi.txt
+  exec:
     - initGit
     - initDVC
     - initGreatExpectations
