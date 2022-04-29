@@ -1,15 +1,29 @@
-import typer
 import click
 import os
 from modules import example_module
 from modules import data_inspector
-from modules import project_initializer
 from modules import auto_data_manager
 from modules.general_utils import ProjectSettings
 from modules.load_env import loadEnv
 import time
 
-@click.command()
+@click.group()
+def cli():
+    pass
+
+commands = ['more_commands_maybe']
+def bind_function(name, c):
+    def func():
+        print("I am the '{}' command".format(c))
+
+    func.__name__ = name
+    return func
+
+for c in commands:
+    f = bind_function('_f', c)
+    _f = cli.command(name=c)(f)
+
+@cli.command()
 @click.option('-n', '--name', type=str, help='Name of root project directory', default=None)
 @click.option('-env', type=str, help='Name of environment configuration file', default='qml-env.yaml')
 def start(name, env):
@@ -26,7 +40,7 @@ def start(name, env):
         if(loadEnv('qml_assets/' + env, rootPath) is None): return
     else:
         ProjectSettings(rootPath)
-    
+
     dataPath = rootPath + '/data'
     auto_data_manager.watchData(dataPath, rootPath)
     os.chdir(rootPath)
@@ -37,7 +51,7 @@ def start(name, env):
     auto_data_manager.stopWatch()
     print("Closed qml")
 
-@click.command(context_settings=dict(
+@cli.command(context_settings=dict(
     ignore_unknown_options=True,
 ))
 @click.argument('filename', type=click.Path(exists=True, dir_okay=False))
@@ -47,25 +61,9 @@ def inspect_data(filename, checkpoint, args):
     parsedArgs = ' ' + ' '.join(args)
     data_inspector.inspectData(filename, parsedArgs)
 
-@click.command()
+@cli.command()
 def stuff():
-    loadEnv("./Templates/qml-env.yaml")
-
-app = typer.Typer()
-@app.callback()
-def callback():
-    """
-    Necessary for Typer to work with Clicker
-    """
-
-typer_click_object = typer.main.get_command(app)
-typer_click_object.add_command(start, "start")
-typer_click_object.add_command(stuff, "stuff")
-typer_click_object.add_command(inspect_data, "inspect-data")
-
-@app.command()
-def cli():
-    typer_click_object()
+    print("HEY!")
 
 if __name__ == "__main__":
-    typer_click_object()
+    cli()
