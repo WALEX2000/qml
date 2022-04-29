@@ -1,12 +1,13 @@
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from watchdog.events import FileCreatedEvent
 from watchdog.events import FileMovedEvent
 from watchdog.events import FileDeletedEvent
 from watchdog.events import FileModifiedEvent
 from watchdog.events import FileMovedEvent
 from . import general_utils
 from . import data_inspector
+
+from modules.general_utils import ProjectSettings, CLIexec
 import os
 import time
 
@@ -21,18 +22,24 @@ class DataHandler(FileSystemEventHandler):
         pass
 
     def on_created(self, event):
-        if(isinstance(event, FileCreatedEvent)):
-            print("\n" + event._src_path + " was Created!")
-            if(event.is_synthetic):
-                print(event.src_path + " generated a Synth Event")
-            # Add file to DVC
-            (_, filename) = os.path.split(event.src_path.lower()) # Head is path info, tail is name info
-            if(filename.endswith('.tmp')):
-                return
-            command = 'dvc add ' + event.src_path + ' --file ' + self.dataPath + '/dataConf/' + filename + '.dvc --no-commit'
-            general_utils.CLIexec(command, self.rootPath)
-            # Create profile for dataFile
-            data_inspector.inspectData(event.src_path)
+        print("\n" + event._src_path + " was Created!")
+        if(event.is_synthetic):
+            print(event.src_path + " generated a Synth Event")
+
+        rootPath = ProjectSettings.getProjPath()
+        dataConfPath = rootPath + '/data/data_conf/'
+        # Add file to DVC
+        (_, filename) = os.path.split(event.src_path)
+        if(filename.endswith('.tmp')):
+            return # Ignore .tmp files
+
+        dvcFilePath = dataConfPath + filename + '.dvc'
+        if(os.path.exists(dvcFilePath)):
+            return # File is already being tracked, so don't do anything
+        
+        command = 'dvc add ' + event.src_path + ' --file ' + dvcFilePath
+        CLIexec(command, rootPath)
+        print("Completed DVC ADD")
 
  
     def on_deleted(self, event):

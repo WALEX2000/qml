@@ -11,10 +11,11 @@ setup:
     - Pipfile.lock
   run:
     - project_initializer
-inspect-data:
-  - data_inspector
 watchdog:
-  dirs:
-    - data:
+  - data:
       on_create:
-        - data_inspector
+        - add_to_DVC
+        - generate_profile
+commands:
+  - inspect-data
+  - stuff

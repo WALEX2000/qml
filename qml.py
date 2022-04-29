@@ -5,6 +5,7 @@ from modules import example_module
 from modules import data_inspector
 from modules import project_initializer
 from modules import auto_data_manager
+from modules.general_utils import ProjectSettings
 from modules.load_env import loadEnv
 import time
 
@@ -23,6 +24,8 @@ def start(name, env):
     
     if(load):
         if(loadEnv('qml_assets/' + env, rootPath) is None): return
+    else:
+        ProjectSettings(rootPath)
     
     dataPath = rootPath + '/data'
     auto_data_manager.watchData(dataPath, rootPath)

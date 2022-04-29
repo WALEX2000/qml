@@ -4,8 +4,9 @@ import os
 import yaml
 import importlib
 
-def CLIexec(cmd: str, execDir: str = os.getcwd()):
+def CLIexec(cmd: str, execDir: str = os.getcwd(), display : bool = True):
     p = Popen(cmd, stdout = PIPE, stderr = STDOUT, shell = True, cwd=execDir)
+    if(not display): return
     reader = io.TextIOWrapper(p.stdout, encoding=None, newline='')
     while not p.stdout.closed:
         char = reader.read(1)
