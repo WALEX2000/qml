@@ -9,21 +9,27 @@ from modules.load_env import loadEnv
 import time
 
 @click.command()
-@click.option('-n', '--name', type=str, help='Name of root project directory', default='Root_of_Project')
+@click.option('-n', '--name', type=str, help='Name of root project directory', default=None)
 @click.option('-env', type=str, help='Name of environment configuration file', default='qml-env.yaml')
 def start(name, env):
-    # If cwd or name is a qml env previously created, start the virtualenv and run the workers
-    # else create the project from the default env
-    rootPath = os.getcwd() + '/' + name
-    dataPath = rootPath + '/data'
-    if(not os.path.exists(rootPath)):
+    envPath = os.getcwd() + '/' + env
+    rootPath = os.getcwd()
+    load = True
+    if(name is None and os.path.exists(envPath)):
+        load = False
+    else:
+        rootPath += '/' + name
+        load = not os.path.exists(rootPath)
+    
+    if(load):
         if(loadEnv('qml_assets/' + env, rootPath) is None): return
     
+    dataPath = rootPath + '/data'
     auto_data_manager.watchData(dataPath, rootPath)
     os.chdir(rootPath)
     time.sleep(1)
     print("\nStarted qml")
-    activateVenv = '/bin/bash --rcfile ' + rootPath + '/bin/activate' # TODO Fix! This is just creating a bash on top of current env. Not creating a new virtual environment
+    activateVenv = '/bin/bash --rcfile ' + rootPath + '/.venv/bin/activate'
     os.system(activateVenv)
     auto_data_manager.stopWatch()
     print("Closed qml")

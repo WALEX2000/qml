@@ -45,6 +45,9 @@ def loadEnv(envName : str, projPath : str):
     folderStructure = setupDict.get('structure')
     print('\n-> Generating Project Structure')
     dictToDir(folderStructure, projPath)
+    
+    assetPath = getAssetPath(envName)
+    shutil.copy(assetPath, projPath)
 
     ProjectSettings(projPath)
 
