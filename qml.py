@@ -5,26 +5,36 @@ from modules import data_inspector
 from modules.general_utils import getAssetPath, getYAML, LOCAL_CONFIG_FILE_NAME
 from modules.load_env import loadEnv
 import time
+import importlib
 
 @click.group()
 def cli():
     pass
 
-# TODO I think this is executed before any qml call
-# So, I think I might have to place the config file inside a fixed directory on the virtual environment
-# Then, whenver I call qml, this here will check for the existence and validity of that file
-# If it finds a valid file it'll add the commands to the tool
-commands = ['more_commands_maybe']
-def bind_function(name, c):
-    def func():
-        print("I am the '{}' command".format(c))
+def addCommandsToQml(envConfDict : dict):
+    def bindCommand(commandName):
+        try:
+            module = importlib.import_module('modules.' + commandName)
+        except ModuleNotFoundError:
+            return None
 
-    func.__name__ = name
-    return func
+        func = module.runCommand
+        func.__name__ = commandName
+        return func
 
-for c in commands:
-    f = bind_function('_f', c)
-    _f = cli.command(name=c)(f)
+    commands : list[str] = envConfDict.get('commands')
+    if commands is None: return
+    for c in commands:
+        f = bindCommand(c)
+        if f is None: continue
+        else: cli.command(name=c)(f)
+
+# TODO This lets the user make use of the commands whenever he's inside the root proj Directory
+# But it'd be better to let him use them whenever he's on the virtualenv shell (so he has access to the commands in all directories of that shell)
+envConfLocation = os.getcwd() + '/' + LOCAL_CONFIG_FILE_NAME
+envConfDict = getYAML(envConfLocation)
+if envConfDict is not None:
+    addCommandsToQml(envConfDict)
 
 @cli.command()
 @click.option('-p', '--path', type=str, help='Name of root project directory relative to current directory', default=None)

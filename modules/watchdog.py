@@ -38,7 +38,6 @@ class DirDog(FileSystemEventHandler):
         # create profile for dataFile
 
 def launchWatchDogs(dirList : list[dict]):
-    print(dirList)
     projPath = ProjectSettings.getProjPath()
     for dir in dirList:
         dirName = dir.get('directory')
