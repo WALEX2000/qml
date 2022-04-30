@@ -1,14 +1,15 @@
 import click
 import os
 from modules.watchdog_manager import launchWatchDogs, stopWatchDogs
-from modules import data_inspector
 from modules.general_utils import getEnvConfigPath, getYAML, LOCAL_CONFIG_FILE_NAME
 from modules.load_env import loadEnv
 import time
 import importlib
 
 @click.group()
-def cli():
+@click.pass_context
+def cli(ctx):
+    #print(ctx.ignore_unknown_options)
     pass
 
 def addCommandsToQml(envConfDict : dict):
@@ -29,9 +30,16 @@ def addCommandsToQml(envConfDict : dict):
     commands : list[str] = envConfDict.get('commands')
     if commands is None: return
     for c in commands:
-        f = bindCommand(c)
+        commandName = c.get('command_name')
+        if commandName is None:
+            print("WARNING: A command specified in the configuration file does not contain a 'command_name' property, and will be ignored")
+            continue
+        
+        contextSettings = c.get('settings')
+        f = bindCommand(commandName)
+        print('Addding: ' + commandName)
         if f is None: continue
-        else: cli.command(name=c)(f)
+        else: cli.command(name=commandName, context_settings=contextSettings)(f)
 
 # TODO This lets the user make use of the commands whenever he's inside the root proj Directory
 # But it'd be better to let him use them whenever he's on the virtualenv shell (so he has access to the commands in all directories of that shell)
@@ -101,18 +109,14 @@ def start(path, config):
     
     print("\nClosed qml")
 
-# TODO make it possible to pass context settings to env file commands
-@cli.command(context_settings=dict(ignore_unknown_options=True))
-@click.argument('filename', type=click.Path(exists=True, dir_okay=False))
-@click.option('--checkpoint', '-ch', is_flag=True, help='Generate a Great Expectations checkpoint for this dataset')
-@click.argument('args', nargs=-1, type=click.UNPROCESSED)
-def inspect_data(filename, checkpoint, args):
-    parsedArgs = ' ' + ' '.join(args)
-    data_inspector.inspectData(filename, parsedArgs)
-
 @cli.command()
 def stuff():
-    print("HEY!")
+    print(dict(ignore_unknown_options=True))
+    print('commands:')
+    envConfLocation = os.getcwd() + '/' + LOCAL_CONFIG_FILE_NAME
+    envConfDict = getYAML(envConfLocation)
+    commands = envConfDict.get('commands')
+    print(commands)
 
 if __name__ == "__main__":
     cli()

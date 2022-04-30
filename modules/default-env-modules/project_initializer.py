@@ -1,7 +1,4 @@
 import os
-import shutil
-from collections import namedtuple
-from pathlib import Path
 from modules.general_utils import CLIexec, CLIcomm, ProjectSettings
 
 def installDependencies(projRoot: str):

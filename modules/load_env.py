@@ -35,7 +35,7 @@ def loadEnv(envConfPath : str, projPath : str, setup : bool) -> dict:
     else:
         envName = envDict.get('name')
         if(envName is None):
-            print("ERROR: Provided configuration file '" + envConfPath + "' does not contain a 'name' propertu")
+            print("ERROR: Provided configuration file '" + envConfPath + "' does not contain a 'name' property")
             return None
     
     if(not setup):

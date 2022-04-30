@@ -5,6 +5,7 @@ from modules.general_utils import CLIexec, storeYAML, getYAML
 import great_expectations as ge
 from great_expectations import DataContext
 import webbrowser
+import click
 
 metaInfo = {
   "profile-hash": "",
@@ -33,8 +34,8 @@ def addMetadataToDVC(filename):
 def inspectData(filename: str, args: str = ' '):
     (filePathHead, filePathTail) = os.path.split(filename.lower()) # Head is path info, tail is name info
     datasetName, fileExtension = os.path.splitext(filePathTail)
-    profilePath = filePathHead + '/dataConf/' + datasetName + '-profile.html'
-    metaPath = filePathHead + '/dataConf/' + datasetName + '-qmlMeta.yaml'
+    profilePath = filePathHead + '/data_conf/' + datasetName + '-profile.html'
+    metaPath = filePathHead + '/data_conf/' + datasetName + '-qmlMeta.yaml'
     profileTitle = "'" + filePathTail + " Profile Report'"
     profilingCommand = 'pandas_profiling ' + filename + ' ' + profilePath + ' --title ' + profileTitle
     hash = hashFile(filename)
@@ -75,3 +76,10 @@ def inspectData(filename: str, args: str = ' '):
     jsonTmpFile.close()
     jsonContent
     """
+
+@click.argument('filename', type=click.Path(exists=True, dir_okay=False))
+@click.option('--checkpoint', '-ch', is_flag=True, help='Generate a Great Expectations checkpoint for this dataset')
+@click.pass_context
+def runCommand(ctx, filename, checkpoint):
+    parsedArgs = ' ' + ' '.join(ctx.args)
+    inspectData(filename, parsedArgs)
