@@ -1,8 +1,8 @@
 import click
 import os
-from modules import example_module, watchdog
+from modules.watchdog_manager import launchWatchDogs, stopWatchDogs
 from modules import data_inspector
-from modules.general_utils import getAssetPath, getYAML, LOCAL_CONFIG_FILE_NAME
+from modules.general_utils import getEnvConfigPath, getYAML, LOCAL_CONFIG_FILE_NAME
 from modules.load_env import loadEnv
 import time
 import importlib
@@ -12,9 +12,13 @@ def cli():
     pass
 
 def addCommandsToQml(envConfDict : dict):
+    envName = envConfDict.get('name')
+    if envName is None: return
+    modulePackage = 'modules.' + envName + '-modules.'
+
     def bindCommand(commandName):
         try:
-            module = importlib.import_module('modules.' + commandName)
+            module = importlib.import_module(modulePackage + commandName)
         except ModuleNotFoundError:
             return None
 
@@ -45,15 +49,16 @@ def start(path, config):
     localConfigPath = rootPath + '/' + LOCAL_CONFIG_FILE_NAME
 
     if config is None:
-        configAssetPath = getAssetPath(LOCAL_CONFIG_FILE_NAME)
         if(os.path.exists(localConfigPath)):
             print('Environment Configuration Detected!')
+            configAssetPath = localConfigPath
             setup = False # Pre-existing environment has already been setup
         else:
+            configAssetPath = getEnvConfigPath('.default-env.yaml')
             setup = True  # There's no Pre-existing environemnt
     else:
         configFileName = '.' + config + '.yaml'
-        configAssetPath = getAssetPath(configFileName)
+        configAssetPath = getEnvConfigPath(configFileName)
         if (not os.path.exists(configAssetPath)):
             print('ERROR: Specified configuration file ' + config + ' could not be found in package assets')
             return
@@ -83,7 +88,7 @@ def start(path, config):
 
     dirList = envDict.get('watchdog')
     if dirList is not None:
-        watchdog.launchWatchDogs(dirList)
+        launchWatchDogs(dirList)
 
     os.chdir(rootPath)
     time.sleep(1)
@@ -92,13 +97,12 @@ def start(path, config):
     os.system(activateVenv)
 
     if dirList is not None:
-        watchdog.stopWatchDogs()
+        stopWatchDogs()
     
     print("\nClosed qml")
 
-@cli.command(context_settings=dict(
-    ignore_unknown_options=True,
-))
+# TODO make it possible to pass context settings to env file commands
+@cli.command(context_settings=dict(ignore_unknown_options=True))
 @click.argument('filename', type=click.Path(exists=True, dir_okay=False))
 @click.option('--checkpoint', '-ch', is_flag=True, help='Generate a Great Expectations checkpoint for this dataset')
 @click.argument('args', nargs=-1, type=click.UNPROCESSED)

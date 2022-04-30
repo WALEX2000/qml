@@ -26,7 +26,7 @@ def addTemplateDatasetToDVC(rootPath: str):
 def initGreatExpectations(projRoot: str):
     CLIcomm('great_expectations init', projRoot, ["y", "banana"])
 
-def run():
+def runProcess():
     projRoot = ProjectSettings.getProjPath()
     print('\n-> Installing Dependencies')
     installDependencies(projRoot)

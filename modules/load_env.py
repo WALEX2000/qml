@@ -32,23 +32,28 @@ def loadEnv(envConfPath : str, projPath : str, setup : bool) -> dict:
     if(envDict is None):
         print("Couldn't load configuration from environment file..")
         return None
-    elif(not setup):
-        ProjectSettings(projPath)
+    else:
+        envName = envDict.get('name')
+        if(envName is None):
+            print("ERROR: Provided configuration file '" + envConfPath + "' does not contain a 'name' propertu")
+            return None
+    
+    if(not setup):
+        ProjectSettings(projPath, envName)
         return envDict
 
     print("\nCommencing Setup...")
+    ProjectSettings(projPath, envName)
     setupDict = envDict.get('setup')
     folderStructure = setupDict.get('structure')
     print('-> Generating Project Structure')
     dictToDir(folderStructure, projPath)
     
     envConfDest = shutil.copy(envConfPath, projPath) # Add environment file to directory
-    newName = projPath + '/' + LOCAL_CONFIG_FILE_NAME
-    os.rename(envConfDest, newName) # Rename it to retain proper name
+    newConfName = projPath + '/' + LOCAL_CONFIG_FILE_NAME
+    os.rename(envConfDest, newConfName) # Rename it to retain proper name
 
-    ProjectSettings(projPath)
-
-    setupProcesses : list[str] = setupDict.get('run')
+    setupProcesses : list[str] = setupDict.get('processes')
     runProcesses(setupProcesses)
     
     print('\n...Setup Complete!')

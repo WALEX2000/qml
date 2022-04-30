@@ -8,9 +8,18 @@ from pathlib import Path
 LOCAL_CONFIG_FILE_NAME = '.qml-env.yaml'
 
 def getAssetPath(fileName : str) -> str:
+    """ Returns the path of an asset to be used inside the project """
+    envName = ProjectSettings.getEnvName()
+    assetsFolderName = "/qml_assets/" + envName + "-assets/" + fileName
     parentDir = Path(__file__).parents[1]
-    filePath = str(parentDir) + "/qml_assets/" + fileName
+    filePath = str(parentDir) + assetsFolderName
     return filePath
+
+def getEnvConfigPath(envFileName : str) -> str:
+    """ Returns the path of the specified env name """
+    parentDir = Path(__file__).parents[1]
+    envPath = str(parentDir) + "/qml_assets/" + envFileName
+    return envPath
 
 def CLIexec(cmd: str, execDir: str = os.getcwd(), display : bool = True):
     p = Popen(cmd, stdout = PIPE, stderr = STDOUT, shell = True, cwd=execDir)
@@ -59,13 +68,17 @@ def storeYAML(filePath: str, dict: dict):
         yaml.dump(dict, file)
 
 def runProcesses(processes : list[str]):
+    envName = ProjectSettings.getEnvName()
+    modulePackage = 'modules.' + envName + '-modules.'
     for process in processes:
-        module = importlib.import_module('modules.' + process)
-        module.run()
+        module = importlib.import_module(modulePackage + process)
+        module.runProcess()
 
 def runEvents(processes : list[str], event):
+    envName = ProjectSettings.getEnvName()
+    modulePackage = 'modules.' + envName + '-modules.'
     for process in processes:
-        module = importlib.import_module('modules.' + process)
+        module = importlib.import_module(modulePackage + process)
         module.runEvent(event)
 
 class ProjectSettings:
@@ -75,10 +88,17 @@ class ProjectSettings:
         if ProjectSettings.__instance == None:
             ProjectSettings()
         return ProjectSettings.__instance.projPath
+
+    @staticmethod 
+    def getEnvName():
+        if ProjectSettings.__instance == None:
+            ProjectSettings()
+        return ProjectSettings.__instance.envName
     
-    def __init__(self, projPath):
+    def __init__(self, projPath, envName):
         if ProjectSettings.__instance != None:
             raise Exception("This class is a singleton!")
         else:
             self.projPath = projPath
+            self.envName = envName
             ProjectSettings.__instance = self
