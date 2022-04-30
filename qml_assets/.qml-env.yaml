@@ -1,9 +1,10 @@
+name: default-env
 version: 0.0.4
 setup:
   structure:
     - data:
       - data_conf:
-      - winequality-red.csv
+      - winequality-red.csv # TODO This is being added to DVC Hardcoded
     - src:
       - ml_pipelines:
       - ml_primitives:
@@ -13,7 +14,7 @@ setup:
     - project_initializer
 watchdog:
   - data:
-      on_create:
+    - on_create:
         - add_to_DVC
         - generate_profile
 commands:

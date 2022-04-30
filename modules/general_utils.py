@@ -3,6 +3,14 @@ import io
 import os
 import yaml
 import importlib
+from pathlib import Path
+
+LOCAL_CONFIG_FILE_NAME = '.qml-env.yaml'
+
+def getAssetPath(fileName : str) -> str:
+    parentDir = Path(__file__).parents[1]
+    filePath = str(parentDir) + "/qml_assets/" + fileName
+    return filePath
 
 def CLIexec(cmd: str, execDir: str = os.getcwd(), display : bool = True):
     p = Popen(cmd, stdout = PIPE, stderr = STDOUT, shell = True, cwd=execDir)
@@ -41,7 +49,7 @@ def getYAML(filePath: str) -> dict:
         try:
             return yaml.safe_load(file)
         except yaml.YAMLError as exc:
-            print("An Unkexpected error occurred while loading " + filePath)
+            print("An Unkexpected error occurred while loading the YAML file: " + filePath)
             return None
 
 def storeYAML(filePath: str, dict: dict):
@@ -54,6 +62,11 @@ def runProcesses(processes : list[str]):
     for process in processes:
         module = importlib.import_module('modules.' + process)
         module.run()
+
+def runEvents(processes : list[str], event):
+    for process in processes:
+        module = importlib.import_module('modules.' + process)
+        module.runEvent(event)
 
 class ProjectSettings:
     __instance = None

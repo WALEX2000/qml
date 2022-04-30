@@ -1,13 +1,6 @@
-from modules.general_utils import getYAML, runProcesses, ProjectSettings
+from modules.general_utils import getYAML, runProcesses, ProjectSettings, getAssetPath, LOCAL_CONFIG_FILE_NAME
 import os
-import importlib
 import shutil
-from pathlib import Path
-
-def getAssetPath(fileName):
-    parentDir = Path(__file__).parents[1]
-    filePath = str(parentDir) + "/qml_assets/" + fileName
-    return filePath
 
 def dictToDir(data : dict, path : str = ""):
     """dictToDir expects data to be a dictionary with one top-level key."""
@@ -33,21 +26,25 @@ def dictToDir(data : dict, path : str = ""):
     if isinstance(data, dict):
         return list(data.keys())[0]
 
-def loadEnv(envName : str, projPath : str):
-    print("Commencing Setup...")
-    print('\n-> Loading Environment Configuration')
-    envDict = getYAML(envName)
+def loadEnv(envConfPath : str, projPath : str, setup : bool) -> dict:
+    print('..Loading Environment Configuration File')
+    envDict = getYAML(envConfPath)
     if(envDict is None):
-        print("Couldn't load configuration from specified environment file..")
+        print("Couldn't load configuration from environment file..")
         return None
+    elif(not setup):
+        ProjectSettings(projPath)
+        return envDict
 
+    print("\nCommencing Setup...")
     setupDict = envDict.get('setup')
     folderStructure = setupDict.get('structure')
-    print('\n-> Generating Project Structure')
+    print('-> Generating Project Structure')
     dictToDir(folderStructure, projPath)
     
-    assetPath = getAssetPath(envName)
-    shutil.copy(assetPath, projPath)
+    envConfDest = shutil.copy(envConfPath, projPath) # Add environment file to directory
+    newName = projPath + '/' + LOCAL_CONFIG_FILE_NAME
+    os.rename(envConfDest, newName) # Rename it to retain proper name
 
     ProjectSettings(projPath)
 
@@ -56,4 +53,4 @@ def loadEnv(envName : str, projPath : str):
     
     print('\n...Setup Complete!')
 
-    return True
+    return envDict
