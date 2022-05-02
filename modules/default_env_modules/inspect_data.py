@@ -1,10 +1,7 @@
-import os
-import hashlib
-import tempfile
+from os import  path
+from hashlib import sha1
 from modules.general_utils import CLIexec, storeYAML, getYAML
-import great_expectations as ge
-from great_expectations import DataContext
-import webbrowser
+from webbrowser import open as openURL
 import click
 
 metaInfo = {
@@ -14,7 +11,7 @@ metaInfo = {
 def hashFile(filename):
    """"This function returns the SHA-1 hash
    of the file passed into it"""
-   h = hashlib.sha1()
+   h = sha1()
    with open(filename,'rb') as file:
        chunk = 0
        while chunk != b'':
@@ -25,15 +22,15 @@ def hashFile(filename):
 
 def addMetadataToDVC(filename):
     dvcPath = filename + ".dvc"
-    if(os.path.exists(dvcPath)):
+    if(path.exists(dvcPath)):
         # TODO add path of profile to dvc meta information (Might be useful for extension)
         pass
     else:
         print("WARNING: The data file you are inspecting is not currently being tracked by DVC.\nPlease consider adding ti to DVC tracking.")
 
 def inspectData(filename: str, args: str = ' '):
-    (filePathHead, filePathTail) = os.path.split(filename.lower()) # Head is path info, tail is name info
-    datasetName, fileExtension = os.path.splitext(filePathTail)
+    (filePathHead, filePathTail) = path.split(filename.lower()) # Head is path info, tail is name info
+    datasetName, fileExtension = path.splitext(filePathTail)
     profilePath = filePathHead + '/data_conf/' + datasetName + '-profile.html'
     metaPath = filePathHead + '/data_conf/' + datasetName + '-qmlMeta.yaml'
     profileTitle = "'" + filePathTail + " Profile Report'"
@@ -47,14 +44,14 @@ def inspectData(filename: str, args: str = ' '):
 
     if(len(args) == 1):
         profilingCommand += ' -m'
-        if(datasetMeta['profile-hash'] != hash or not os.path.exists(profilePath)):
+        if(datasetMeta['profile-hash'] != hash or not path.exists(profilePath)):
             print("Profile hash is outdated. Generating new profile report..")
             CLIexec(profilingCommand)
             datasetMeta['profile-hash'] = hash
         else:
             print("Profile found. Rendering HTML..")
-            url='file://' + str(os.path.abspath(profilePath))
-            webbrowser.open(url)
+            url='file://' + str(path.abspath(profilePath))
+            openURL(url)
             return
     else:
         profilingCommand += args

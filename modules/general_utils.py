@@ -5,12 +5,12 @@ import yaml
 import importlib
 from pathlib import Path
 
-LOCAL_CONFIG_FILE_NAME = '.qml-env.yaml'
+LOCAL_CONFIG_FILE_NAME = '.qml_env.yaml'
 
 def getAssetPath(fileName : str) -> str:
     """ Returns the path of an asset to be used inside the project """
     envName = ProjectSettings.getEnvName()
-    assetsFolderName = "/qml_assets/" + envName + "-assets/" + fileName
+    assetsFolderName = "/qml_assets/" + envName + "_assets/" + fileName
     parentDir = Path(__file__).parents[1]
     filePath = str(parentDir) + assetsFolderName
     return filePath
@@ -69,17 +69,23 @@ def storeYAML(filePath: str, dict: dict):
 
 def runProcesses(processes : list[str]):
     envName = ProjectSettings.getEnvName()
-    modulePackage = 'modules.' + envName + '-modules.'
+    modulePackage = 'modules.' + envName + '_modules.'
     for process in processes:
         module = importlib.import_module(modulePackage + process)
-        module.runProcess()
+        try:
+            module.runProcess()
+        except:
+            print("\nERROR: Caught exception running setup process: " + process + "'")
 
 def runEvents(processes : list[str], event):
     envName = ProjectSettings.getEnvName()
-    modulePackage = 'modules.' + envName + '-modules.'
+    modulePackage = 'modules.' + envName + '_modules.'
     for process in processes:
         module = importlib.import_module(modulePackage + process)
-        module.runEvent(event)
+        try:
+            module.runEvent(event)
+        except:
+            print("\nERROR: Caught exception running event: " + str(event) + "\n- The exception occurred in process: '" + process + "'")
 
 class ProjectSettings:
     __instance = None

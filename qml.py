@@ -7,15 +7,13 @@ import time
 import importlib
 
 @click.group()
-@click.pass_context
-def cli(ctx):
-    #print(ctx.ignore_unknown_options)
+def cli():
     pass
 
 def addCommandsToQml(envConfDict : dict):
     envName = envConfDict.get('name')
     if envName is None: return
-    modulePackage = 'modules.' + envName + '-modules.'
+    modulePackage = 'modules.' + envName + '_modules.'
 
     def bindCommand(commandName):
         try:
@@ -37,7 +35,6 @@ def addCommandsToQml(envConfDict : dict):
         
         contextSettings = c.get('settings')
         f = bindCommand(commandName)
-        print('Addding: ' + commandName)
         if f is None: continue
         else: cli.command(name=commandName, context_settings=contextSettings)(f)
 
@@ -62,7 +59,7 @@ def start(path, config):
             configAssetPath = localConfigPath
             setup = False # Pre-existing environment has already been setup
         else:
-            configAssetPath = getEnvConfigPath('.default-env.yaml')
+            configAssetPath = getEnvConfigPath('.default_env.yaml')
             setup = True  # There's no Pre-existing environemnt
     else:
         configFileName = '.' + config + '.yaml'
