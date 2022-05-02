@@ -4,8 +4,9 @@ from modules.general_utils import CLIexec, storeYAML, getYAML
 from webbrowser import open as openURL
 import click
 
-metaInfo = {
-  "profile-hash": "",
+metaInfoTemplate = {
+  "pandas_profile_hash": "",
+  "profiles": []
 }
 
 def hashFile(filename):
@@ -20,52 +21,64 @@ def hashFile(filename):
 
    return h.hexdigest()
 
-def addMetadataToDVC(filename):
-    dvcPath = filename + ".dvc"
-    if(path.exists(dvcPath)):
-        # TODO add path of profile to dvc meta information (Might be useful for extension)
-        pass
-    else:
-        print("WARNING: The data file you are inspecting is not currently being tracked by DVC.\nPlease consider adding ti to DVC tracking.")
+def saveMetadata(metaPath : str, metaDict : dict):
+    """Saves provided Metadata to .dvc file. If no DVC file found, metadata is not stored"""
+    if(path.exists(metaPath)):
+        dvcDict = getYAML(metaPath)
+        if(dvcDict is None): return
+        dvcDict['meta'] = metaDict
+        storeYAML(metaPath, dvcDict)
 
-def inspectData(filename: str, args: str = ' '):
-    (filePathHead, filePathTail) = path.split(filename.lower()) # Head is path info, tail is name info
+def getMetadata(metaPath):
+    """Finds Metadata stored in .dvc file and returns it. If none can be found, returns None"""
+    metaDict = None
+    if(path.exists(metaPath)):
+        dvcDict = getYAML(metaPath)
+        if(dvcDict is not None):
+            metaDict = dvcDict.get('meta')
+    else:
+        print("WARNING: The data file you are inspecting is currently not being tracked by DVC. Please consider adding it to DVC tracking.")
+    return metaDict
+
+def getInfoFromDataPath(filePath : str):
+    (filePathHead, filePathTail) = path.split(filePath) # Head is path info, tail is name info
     datasetName, fileExtension = path.splitext(filePathTail)
     profilePath = filePathHead + '/data_conf/' + datasetName + '-profile.html'
-    metaPath = filePathHead + '/data_conf/' + datasetName + '-qmlMeta.yaml'
+    metaPath = filePathHead + '/data_conf/' + filePathTail + '.dvc'
     profileTitle = "'" + filePathTail + " Profile Report'"
-    profilingCommand = 'pandas_profiling ' + filename + ' ' + profilePath + ' --title ' + profileTitle
-    hash = hashFile(filename)
-    # Check if file has meta information and get it if it exists
-    datasetMeta = getYAML(metaPath)
-    if(datasetMeta is None):
-        print("Dataset meta information couldn't be found. Generating new meta information")
-        datasetMeta = metaInfo
+    return (datasetName, profilePath, profileTitle, fileExtension, metaPath)
 
-    if(len(args) == 1):
-        profilingCommand += ' -m'
-        if(datasetMeta['profile-hash'] != hash or not path.exists(profilePath)):
+def getProfileCmd(filePath : str, profilePath : str, profileTitle : str):
+    return 'pandas_profiling ' + filePath + ' ' + profilePath + ' --title ' + profileTitle
+
+def inspectData(filePath: str, args: str, large: bool = False):
+    (_, profilePath, profileTitle, _, metaPath) = getInfoFromDataPath(filePath)
+    profilingCommand = getProfileCmd(filePath, profilePath, profileTitle)
+    if(not large): profilingCommand += ' -m'
+    
+    hash = hashFile(filePath)
+    datasetMeta = getMetadata(metaPath)
+    newMeta = datasetMeta
+    if(datasetMeta is None): newMeta = metaInfoTemplate
+
+    if(len(args) == 0): # If no arguments were provided
+        if(datasetMeta['pandas_profile_hash'] != hash or not path.exists(profilePath)): #Outdated or non-existent
             print("Profile hash is outdated. Generating new profile report..")
-            CLIexec(profilingCommand)
-            datasetMeta['profile-hash'] = hash
         else:
             print("Profile found. Rendering HTML..")
             url='file://' + str(path.abspath(profilePath))
             openURL(url)
             return
-    else:
-        profilingCommand += args
+    else: # Arguments were given
+        profilingCommand += ' ' + args
         print("Custom arguments detected. Calling pandas-profiling CLI..")
-        CLIexec(profilingCommand)
-        datasetMeta['profile-hash'] = hash
     
-    storeYAML(metaPath, datasetMeta)
+    if(not CLIexec(profilingCommand)): # If call failed, return
+        return
+    elif(args.count('-h') == 0): # If call wasn't a mere help prompt
+        newMeta['pandas_profile_hash'] = hash
+        saveMetadata(metaPath, newMeta)
 
-    # Then, do this automatically with the wathchdog thingie
-
-    # Then, add great expectations support
-
-    # Then, add Autoviz support
 
     """
     jsonTmpFile = tempfile.NamedTemporaryFile(suffix='.json')
@@ -75,8 +88,9 @@ def inspectData(filename: str, args: str = ' '):
     """
 
 @click.argument('filename', type=click.Path(exists=True, dir_okay=False))
+@click.option('--full', '-f', is_flag=True, help='Generate the full report for the data-set. Default is minimal')
 @click.option('--checkpoint', '-ch', is_flag=True, help='Generate a Great Expectations checkpoint for this dataset')
 @click.pass_context
-def runCommand(ctx, filename, checkpoint):
-    parsedArgs = ' ' + ' '.join(ctx.args)
-    inspectData(filename, parsedArgs)
+def runCommand(ctx, filename, full, checkpoint):
+    parsedArgs = ' '.join(ctx.args)
+    inspectData(filename, parsedArgs, full)

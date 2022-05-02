@@ -1,4 +1,4 @@
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import CalledProcessError, CompletedProcess, Popen, PIPE, STDOUT, TimeoutExpired, run
 import io
 import os
 import yaml
@@ -21,17 +21,43 @@ def getEnvConfigPath(envFileName : str) -> str:
     envPath = str(parentDir) + "/qml_assets/" + envFileName
     return envPath
 
-def CLIexec(cmd: str, execDir: str = os.getcwd(), display : bool = True):
-    p = Popen(cmd, stdout = PIPE, stderr = STDOUT, shell = True, cwd=execDir)
-    if(not display): return
+def CLIexecSync(cmd: str, execDir: str = os.getcwd(), display : bool = True, debugInfo : bool = True) -> bool:
+    """Executes a CLI call and then returns True or False depedning on the success of the Call"""
+    try:
+        completedProcess : CompletedProcess = run(cmd, stdout = PIPE, stderr = PIPE, shell = True, cwd=execDir, check=True)
+    except CalledProcessError as err:
+        if(debugInfo):
+            print(err.stderr.decode('utf-8'))
+        return False
+    
+    if(display):
+        print(completedProcess.stdout.decode('utf-8'))
+    
+    return True
+    
+
+def CLIexec(cmd: str, execDir: str = os.getcwd(), display : bool = True, debugInfo : bool = True):
+    """Async CLI call, with optional real-time display of output and errors"""
+    if(debugInfo): stderrOutput = STDOUT
+    else: stderrOutput = None
+    p = Popen(cmd, stdout = PIPE, stderr = stderrOutput, shell = True, cwd=execDir)
+    if(not display): return True # If no Display, assume a correct execution of the process
     reader = io.TextIOWrapper(p.stdout, encoding=None, newline='')
     while not p.stdout.closed:
         char = reader.read(1)
         if(char == ''):
             break
         print(char, end='')
-    
     reader.close()
+
+    try:
+        result = p.wait(timeout=3)
+        if(result == 0): return True
+        else: print('Process Call "' + cmd + '" Failed..')
+    except TimeoutExpired as timeout:
+        print('WARNING: Timed out while waiting for process "' + cmd + '". Will mark process as Failed')
+    
+    return False
 
 def CLIcomm(cmd: str, execDir: str, inputs: list[str]):
     p = Popen(cmd, stdout = PIPE, stderr = STDOUT, stdin=PIPE, shell = True, cwd=execDir)
@@ -84,8 +110,9 @@ def runEvents(processes : list[str], event):
         module = importlib.import_module(modulePackage + process)
         try:
             module.runEvent(event)
-        except:
+        except Exception as exception:
             print("\nERROR: Caught exception running event: " + str(event) + "\n- The exception occurred in process: '" + process + "'")
+            print(exception)
 
 class ProjectSettings:
     __instance = None

@@ -1,5 +1,5 @@
 import os
-from modules.general_utils import ProjectSettings, CLIexec
+from modules.general_utils import ProjectSettings, CLIexecSync
 
 def runEvent(event):
     rootPath = ProjectSettings.getProjPath()
@@ -14,4 +14,4 @@ def runEvent(event):
         return # File is already being tracked, but .dvc may trigger creation twice, so don't do anything
     
     command = 'dvc add ' + event.src_path + ' --file ' + dvcFilePath
-    CLIexec(command, rootPath, False)
+    CLIexecSync(command, rootPath, display=False)

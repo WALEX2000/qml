@@ -1,21 +1,23 @@
-from modules.general_utils import CLIexec
+from modules.general_utils import CLIexecSync
+from modules.default_env_modules.inspect_data import getInfoFromDataPath, getMetadata, saveMetadata, metaInfoTemplate, hashFile
 from os import path
 
 def runEvent(event):
-    (_, filename) = path.split(event.src_path)
-    if(filename.endswith('.tmp')):
-        return # Ignore .tmp files
+    (_, profilePath, profileTitle, fileExtension, metaPath) = getInfoFromDataPath(event.src_path)
+    if(fileExtension == '.tmp'): return
 
-    (filePathHead, filePathTail) = path.split(filename.lower()) # Head is path info, tail is name info
-    datasetName, fileExtension = path.splitext(filePathTail)
-    profilePath = filePathHead + '/data_conf/' + datasetName + '-profile.html'
-    profileTitle = "'" + filePathTail + " Profile Report'"
+    hash = hashFile(event.src_path)
+    metaDict = getMetadata(metaPath)
+    if(metaDict is None): metaDict = metaInfoTemplate
+    elif(metaDict.get('pandas_profile_hash') == hash and path.exists(profilePath)): return
+    metaDict['pandas_profile_hash'] = hash
 
     if(event.is_directory):
         profileArgs = ' -s -e --pool_size 3 --title ' + profileTitle
     else:
         profileArgs = ' -s -m --title ' + profileTitle
-
     profilingCommand = 'pandas_profiling ' + event.src_path + ' ' + profilePath + profileArgs
-    CLIexec(profilingCommand, display=True)
+    
+    if(CLIexecSync(profilingCommand, display=False, debugInfo=False)):
+        saveMetadata(metaPath, metaDict)
     
