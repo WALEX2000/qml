@@ -8,6 +8,7 @@ def installDependencies(projRoot: str):
 def initDVC(projRoot: str):
     CLIexec('dvc init', projRoot)
     CLIexec('dvc config core.autostage true', projRoot)
+    CLIexec('dvc config cache.type copy', projRoot)
 
 def initGit(projRoot: str):
     CLIexec('git init', projRoot)

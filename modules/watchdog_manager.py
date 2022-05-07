@@ -23,19 +23,14 @@ class DirDog(FileSystemEventHandler):
     def on_deleted(self, event):
         if self.deleteActions is not None:
             runEvents(self.deleteActions, event)
-        # not sure if I should automatically undo dvc / profile or not
  
     def on_modified(self, event):
         if self.modifyActions is not None:
             runEvents(self.modifyActions, event)
-        # For now I don't think there's anything that I should do here (But this could be automated as well)
  
     def on_moved(self, event):
         if self.moveActions is not None:
             runEvents(self.moveActions, event)
-        # if moved into data
-        # add dataset to dvc
-        # create profile for dataFile
 
 def launchWatchDogs(dirList : list[dict]):
     projPath = ProjectSettings.getProjPath()
