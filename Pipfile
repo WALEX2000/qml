@@ -16,6 +16,8 @@ great-expectations = "*"
 watchdog = "*"
 
 [dev-packages]
+jupyter = "*"
+notebook = "*"
 
 [requires]
 python_version = "3"

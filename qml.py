@@ -1,7 +1,7 @@
 import click
 import os
 from modules.watchdog_manager import launchWatchDogs, stopWatchDogs
-from modules.general_utils import getEnvConfigPath, getYAML, LOCAL_CONFIG_FILE_NAME
+from modules.general_utils import getEnvConfigPath, getYAML, LOCAL_CONFIG_FILE_NAME, ProjectSettings
 from modules.load_env import loadEnv
 import time
 import importlib
@@ -10,9 +10,10 @@ import importlib
 def cli():
     pass
 
-def addCommandsToQml(envConfDict : dict):
+def addCommandsToQml(projRootPath : str, envConfDict : dict):
     envName = envConfDict.get('name')
     if envName is None: return
+    ProjectSettings(projRootPath, envName)
     modulePackage = 'modules.' + envName + '_modules.'
 
     def bindCommand(commandName):
@@ -43,7 +44,7 @@ def addCommandsToQml(envConfDict : dict):
 envConfLocation = os.getcwd() + '/' + LOCAL_CONFIG_FILE_NAME
 envConfDict = getYAML(envConfLocation)
 if envConfDict is not None:
-    addCommandsToQml(envConfDict)
+    addCommandsToQml(os.getcwd(), envConfDict)
 
 @cli.command()
 @click.option('-p', '--path', type=str, help='Name of root project directory relative to current directory', default=None)
@@ -84,10 +85,10 @@ def start(path, config):
         else:
             setup = True  # There's no Pre-existing environemnt
     
-    if(setup):
+    if(setup):  # Need to create new Env
         print('No existing environemnt found. Will start a new one..')
         envDict = loadEnv(configAssetPath, rootPath, True)
-    else:
+    else: # Need to load existing Env
         envDict = loadEnv(localConfigPath, rootPath, False)
     if envDict is None: return
 
@@ -108,12 +109,7 @@ def start(path, config):
 
 @cli.command()
 def stuff():
-    print(dict(ignore_unknown_options=True))
-    print('commands:')
-    envConfLocation = os.getcwd() + '/' + LOCAL_CONFIG_FILE_NAME
-    envConfDict = getYAML(envConfLocation)
-    commands = envConfDict.get('commands')
-    print(commands)
+    print('Stuff')
 
 if __name__ == "__main__":
     cli()

@@ -1,11 +1,12 @@
-name: default-env #Name has to be the same as the file name in the qml assets folder (name will later be changed here)
+name: default_env #Name has to be the same as the file name in the qml assets folder (name will later be changed here)
 version: 0.0.5
 setup:
   structure:
     - data:
       - data_conf:
-      - winequality-red.csv # TODO This is being added to DVC Hardcoded
+      - winequality-red.csv
     - src:
+      - data_analysis:
       - ml_pipelines:
       - ml_primitives:
     - Pipfile
@@ -18,11 +19,10 @@ watchdog:
       on_create:
         - add_to_DVC
         - generate_profile
-      on_delete:
-        - yey
-  - directory: banana
-    events:
-      on_modify:
-        - eat
 commands:
-  - print-message
+  - command_name: print_message
+  - command_name: scaffold_EDA
+  - command_name: inspect_data
+    settings:
+      ignore_unknown_options: True
+      allow_extra_args: True
