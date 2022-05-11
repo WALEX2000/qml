@@ -6,11 +6,15 @@ from os import path
 
 NB_PATH = ProjectSettings.getProjPath() + '/src/data_analysis/'
 
+# TODO add meta information on the autoviz file
+# TODO install autoviz beforehand
+# TODO If file already exists, create a new one
+
 @click.argument('filename', type=click.Path(exists=True, dir_okay=False))
 @click.option('--features', '-f', type=int, help='Number of features to automatically analyse', default=5)
 def runCommand(filename, features):
     """ Create a jupyter notebook file with AutoViz inspecting features in dataset 'filename' and add to meta of filename """
-    absFilePath = path.abspath(filename)
+    absFilePath = path.abspath(filename) # TODO Replace absolute with a relative path that works from the place the file is
     (filePathHead, filePathTail) = path.split(filename) # Head is path info, tail is name info
     datasetName, _ = path.splitext(filePathTail)
     metaFilePath = filePathHead + '/data_conf/' + filePathTail + '.dvc'
@@ -49,4 +53,4 @@ dft = AV.AutoViz(
     with open(nbFilePath, 'w') as f:
         nbfWrite(notebook, f)
     
-    print(nbFilePath)
+    print('Generated File: ' + nbFilePath)
