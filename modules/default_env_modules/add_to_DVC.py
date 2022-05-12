@@ -15,3 +15,5 @@ def runEvent(event):
     
     command = 'dvc add ' + event.src_path + ' --file ' + dvcFilePath
     CLIexecSync(command, rootPath, display=False)
+
+    # TODO Generate appropriate meta information

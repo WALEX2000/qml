@@ -12,6 +12,10 @@ def runEvent(event):
     elif(metaDict.get('pandas_profile_hash') == hash and path.exists(profilePath)): return
     metaDict['pandas_profile_hash'] = hash
 
+    if(fileExtension == '.dataset'):
+        # Might need temporary files for .dataset file (Created temporary dataframe maybe? and then inspect it with pandas profile)
+        pass
+
     if(event.is_directory):
         profileArgs = ' -s -e --pool_size 3 --title ' + profileTitle
     else:

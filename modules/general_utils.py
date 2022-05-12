@@ -130,7 +130,7 @@ class ProjectSettings:
     
     def __init__(self, projPath, envName):
         if ProjectSettings.__instance != None:
-            raise Exception("This class is a singleton!")
+            return
         else:
             self.projPath = projPath
             self.envName = envName

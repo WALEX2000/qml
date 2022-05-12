@@ -43,7 +43,7 @@ def getMetadata(metaPath):
 def getInfoFromDataPath(filePath : str):
     (filePathHead, filePathTail) = path.split(filePath) # Head is path info, tail is name info
     datasetName, fileExtension = path.splitext(filePathTail)
-    profilePath = filePathHead + '/data_conf/' + datasetName + '-profile.html'
+    profilePath = filePathHead + '/data_conf/' + filePathTail + '.html'
     metaPath = filePathHead + '/data_conf/' + filePathTail + '.dvc'
     profileTitle = "'" + filePathTail + " Profile Report'"
     return (datasetName, profilePath, profileTitle, fileExtension, metaPath)
