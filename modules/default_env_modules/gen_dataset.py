@@ -35,14 +35,17 @@ dataframe.head()"""
     datasetCreatorCode = f"""\
 datasetName = '{dataName} Dataset'
 datasetDescription = '<Insert Description>'
-dataModality = '<Insert Data Modality>' # single_table |  
-taskType = '<Insert Task Type>' # classification |
-targetVarName = '<Insert Name of Target Variable>' # Delete if task does not require a target variable
+dataModality = '<Insert Data Modality>' # single_table | multi_table | text | image | graph
+taskType = '<Insert Task Type>' # classification | regression
+targetVarName = '<Insert Name of Target Variable>'
 scoringFunction = accuracy_score # Edit with more adequate scoring function if deemed necessary
 
 _inputData = dataframe.loc[:, dataframe.columns != targetVarName]
 _targetData = dataframe.loc[:, dataframe.columns == targetVarName]
-dataset = Dataset(name=datasetName, description=datasetDescription, data=_inputData, target=_targetData, score=scoringFunction, data_modality=dataModality, task_type=taskType)"""
+dataset = Dataset(name=datasetName, description=datasetDescription, data=_inputData, target=_targetData, score=scoringFunction, data_modality=dataModality, task_type=taskType)
+
+print(dataset.target.head())
+print(dataset.data.head())"""
 
     saveDatasetCode = f"""\
 with open('{datasetPathRelativeToGen}', 'wb') as datasetFile:

@@ -9,6 +9,7 @@ NB_PATH = ProjectSettings.getProjPath() + '/src/data_analysis/'
 # TODO add meta information on the autoviz file
 # TODO install autoviz beforehand
 # TODO If file already exists, create a new one
+# TODO add option for .dataset load
 
 @click.argument('filename', type=click.Path(exists=True, dir_okay=False))
 @click.option('--features', '-f', type=int, help='Number of features to automatically analyse', default=5)

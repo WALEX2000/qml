@@ -1,18 +1,20 @@
 from os import  path
-from hashlib import sha1
+from hashlib import md5
 from modules.general_utils import CLIexec, storeYAML, getYAML
 from webbrowser import open as openURL
 import click
 
 metaInfoTemplate = {
-  "pandas_profile_hash": "",
-  "profiles": []
+    "type": "",
+    "version": "",    
+    "pandas_profile_hash": "",
+    "profiles": []
 }
 
 def hashFile(filename):
-   """"This function returns the SHA-1 hash
+   """"This function returns the MD5 hash
    of the file passed into it"""
-   h = sha1()
+   h = md5()
    with open(filename,'rb') as file:
        chunk = 0
        while chunk != b'':
@@ -59,7 +61,7 @@ def inspectData(filePath: str, args: str, large: bool = False):
     hash = hashFile(filePath)
     datasetMeta = getMetadata(metaPath)
     newMeta = datasetMeta
-    if(datasetMeta is None): newMeta = metaInfoTemplate
+    if(datasetMeta is None): newMeta = metaInfoTemplate.copy()
 
     if(len(args) == 0): # If no arguments were provided
         if(datasetMeta['pandas_profile_hash'] != hash or not path.exists(profilePath)): #Outdated or non-existent

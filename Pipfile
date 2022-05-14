@@ -4,8 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-typer = "*"
-typer-cli = "*"
 twine = "*"
 wheel = "*"
 click = "*"
@@ -14,6 +12,7 @@ pandas = "*"
 pandas-profiling = "*"
 great-expectations = "*"
 watchdog = "*"
+mlprimitives = "*"
 
 [dev-packages]
 jupyter = "*"
