@@ -2,7 +2,7 @@ import click
 import os
 from modules.watchdog_manager import launchWatchDogs, stopWatchDogs
 from modules.general_utils import getEnvConfigPath, getYAML, LOCAL_CONFIG_FILE_NAME, ProjectSettings
-from modules.load_env import loadEnv
+from modules.load_env import createEnv, checkEnv, loadEnv
 import time
 import importlib
 
@@ -54,7 +54,7 @@ def start(path, config):
     else: rootPath = os.getcwd() + '/' + path
     localConfigPath = rootPath + '/' + LOCAL_CONFIG_FILE_NAME
 
-    if config is None:
+    if config is None: # No config was specified (either create new, or boot up)
         if(os.path.exists(localConfigPath)):
             print('Environment Configuration Detected!')
             configAssetPath = localConfigPath
@@ -62,7 +62,8 @@ def start(path, config):
         else:
             configAssetPath = getEnvConfigPath('.default_env.yaml')
             setup = True  # There's no Pre-existing environemnt
-    else:
+    else: # A config was specified (create new)
+        setup = True
         configFileName = '.' + config + '.yaml'
         configAssetPath = getEnvConfigPath(configFileName)
         if (not os.path.exists(configAssetPath)):
@@ -70,26 +71,19 @@ def start(path, config):
             return
         
         if(os.path.exists(localConfigPath)): # An environment has alread been setup before
-            localConfDict = getYAML(localConfigPath)
-            if localConfDict is None: return
-            envName = localConfDict.get('name')
-            if envName is None:
-                print("ERROR: Local configuration file '" + localConfigPath + "' doesn't contain required property 'name'")
-                return
-            if envName == config:
-                print('Matching Environment Configuration Detected!')
-                setup = False # confs match so we can just load existing one
-            else:
-                print("ERROR: provided configuration file '" + config + "' doesn't match existing configuration '" + localConfigPath + "'")
-                return
-        else:
-            setup = True  # There's no Pre-existing environemnt
+            print("ERROR: provided a configuration file: '" + config + "' But there already exists one in this directory: '" + localConfigPath + "'")
+            return
     
     if(setup):  # Need to create new Env
         print('No existing environemnt found. Will start a new one..')
-        envDict = loadEnv(configAssetPath, rootPath, True)
-    else: # Need to load existing Env
-        envDict = loadEnv(localConfigPath, rootPath, False)
+        createEnv(configAssetPath, rootPath)
+    
+    envDict = checkEnv(localConfigPath, rootPath)
+    loadEnv(envDict, rootPath)
+
+    return
+    
+    
     if envDict is None: return
 
     dirList = envDict.get('watchdog')
@@ -108,8 +102,8 @@ def start(path, config):
     print("\nClosed qml")
 
 @cli.command()
-def stuff():
-    print('Stuff')
+def edit():
+    print('This is the edit command. It will print the dir for creating new workflow environments')
 
 if __name__ == "__main__":
     cli()

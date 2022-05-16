@@ -32,7 +32,7 @@ class DirDog(FileSystemEventHandler):
         if self.moveActions is not None:
             runEvents(self.moveActions, event)
 
-def launchWatchDogs(dirList : list[dict]):
+def launchWatchDogs(dirList : "list[dict]"):
     projPath = ProjectSettings.getProjPath()
     for dir in dirList:
         dirName = dir.get('directory')

@@ -1,4 +1,3 @@
-name: default_env #Name has to be the same as the file name in the qml assets folder (name will later be changed here)
 version: 0.0.5
 setup:
   structure:

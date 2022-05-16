@@ -10,7 +10,10 @@ LOCAL_CONFIG_FILE_NAME = '.qml_env.yaml'
 def getAssetPath(fileName : str) -> str:
     """ Returns the path of an asset to be used inside the project """
     envName = ProjectSettings.getEnvName()
-    assetsFolderName = "/qml_assets/" + envName + "_assets/" + fileName
+    simpleName, _ = os.path.splitext(envName)
+    simpleName = simpleName[1:]
+    folderName = simpleName + "_assets/" 
+    assetsFolderName = "/qml_assets/" + folderName + fileName
     parentDir = Path(__file__).parents[1]
     filePath = str(parentDir) + assetsFolderName
     return filePath
@@ -59,7 +62,7 @@ def CLIexec(cmd: str, execDir: str = os.getcwd(), display : bool = True, debugIn
     
     return False
 
-def CLIcomm(cmd: str, execDir: str, inputs: list[str]):
+def CLIcomm(cmd: str, execDir: str, inputs: "list[str]"):
     p = Popen(cmd, stdout = PIPE, stderr = STDOUT, stdin=PIPE, shell = True, cwd=execDir)
     reader = io.TextIOWrapper(p.stdout, encoding=None, newline='')
     writer = io.TextIOWrapper(p.stdin, line_buffering=True, newline=None)
@@ -93,9 +96,11 @@ def storeYAML(filePath: str, dict: dict):
     with open(filePath, mode) as file:
         yaml.dump(dict, file)
 
-def runProcesses(processes : list[str]):
+def runProcesses(processes : "list[str]"):
     envName = ProjectSettings.getEnvName()
-    modulePackage = 'modules.' + envName + '_modules.'
+    simpleName, _ = os.path.splitext(envName)
+    simpleName = simpleName[1:]
+    modulePackage = 'modules.' + simpleName + '_modules.'
     for process in processes:
         module = importlib.import_module(modulePackage + process)
         try:
@@ -103,8 +108,10 @@ def runProcesses(processes : list[str]):
         except:
             print("\nERROR: Caught exception running setup process: " + process + "'")
 
-def runEvents(processes : list[str], event):
+def runEvents(processes : "list[str]", event):
     envName = ProjectSettings.getEnvName()
+    simpleName, _ = os.path.splitext(envName)
+    simpleName = simpleName[1:]
     modulePackage = 'modules.' + envName + '_modules.'
     for process in processes:
         module = importlib.import_module(modulePackage + process)

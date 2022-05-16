@@ -22,7 +22,7 @@ def addTemplateDatasetToDVC(rootPath: str):
     CLIexec('dvc add data/winequality-red.csv --file data/data_conf/winequality-red.csv.dvc', rootPath)
 
 def initGreatExpectations(projRoot: str):
-    CLIcomm('great_expectations init', projRoot, ["y", "banana"])
+    CLIcomm('great_expectations init', projRoot, ["y"])
 
 def runProcess():
     projRoot = ProjectSettings.getProjPath()
