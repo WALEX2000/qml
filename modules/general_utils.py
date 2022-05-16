@@ -112,7 +112,7 @@ def runEvents(processes : "list[str]", event):
     envName = ProjectSettings.getEnvName()
     simpleName, _ = os.path.splitext(envName)
     simpleName = simpleName[1:]
-    modulePackage = 'modules.' + envName + '_modules.'
+    modulePackage = 'modules.' + simpleName + '_modules.'
     for process in processes:
         module = importlib.import_module(modulePackage + process)
         try:

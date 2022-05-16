@@ -1,9 +1,7 @@
 import click
 import os
-from modules.watchdog_manager import launchWatchDogs, stopWatchDogs
 from modules.general_utils import getEnvConfigPath, getYAML, LOCAL_CONFIG_FILE_NAME, ProjectSettings
 from modules.load_env import createEnv, checkEnv, loadEnv
-import time
 import importlib
 
 @click.group()
@@ -13,9 +11,17 @@ def cli():
 def addCommandsToQml(projRootPath : str, envConfDict : dict):
     envName = envConfDict.get('name')
     if envName is None: return
-    ProjectSettings(projRootPath, envName)
-    modulePackage = 'modules.' + envName + '_modules.'
+    simpleName, _ = os.path.splitext(envName)
+    simpleName = simpleName[1:]
 
+
+    envFilePath = projRootPath + "/" + LOCAL_CONFIG_FILE_NAME
+    try:
+        envDict = checkEnv(envFilePath, projRootPath)
+    except:
+        return
+
+    modulePackage = 'modules.' + simpleName + '_modules.'
     def bindCommand(commandName):
         try:
             module = importlib.import_module(modulePackage + commandName)
@@ -26,7 +32,7 @@ def addCommandsToQml(projRootPath : str, envConfDict : dict):
         func.__name__ = commandName
         return func
 
-    commands : list[str] = envConfDict.get('commands')
+    commands : list[str] = envDict.get('commands')
     if commands is None: return
     for c in commands:
         commandName = c.get('command_name')
@@ -80,26 +86,6 @@ def start(path, config):
     
     envDict = checkEnv(localConfigPath, rootPath)
     loadEnv(envDict, rootPath)
-
-    return
-    
-    
-    if envDict is None: return
-
-    dirList = envDict.get('watchdog')
-    if dirList is not None:
-        launchWatchDogs(dirList)
-
-    os.chdir(rootPath)
-    time.sleep(1)
-    print("\nStarted qml")
-    activateVenv = '/bin/bash --rcfile ' + rootPath + '/.venv/bin/activate'
-    os.system(activateVenv)
-
-    if dirList is not None:
-        stopWatchDogs()
-    
-    print("\nClosed qml")
 
 @cli.command()
 def edit():

@@ -16,7 +16,7 @@ def getDataset(filePath : str):
     # Return string to tmp file
     pass
 
-getDataset("/Users/alexandrecarqueja/Desktop/Tese/qml/EXPERIMENTS/Exp2/data/winequality-BLUE.dataset")
+# getDataset("/Users/alexandrecarqueja/Desktop/Tese/qml/EXPERIMENTS/Exp2/data/winequality-BLUE.dataset")
 
 def runEvent(event):
     if(event.is_directory is True): return

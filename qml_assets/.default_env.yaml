@@ -1,4 +1,4 @@
-version: 0.0.5
+version: 0.2.0
 setup:
   structure:
     - data:
@@ -6,8 +6,10 @@ setup:
       - winequality-red.csv
     - src:
       - data_analysis:
+        - dataset_generators:
       - ml_pipelines:
-      - ml_primitives:
+        - pipeline_annonations:
+      - mlblocks_primitives:
     - Pipfile
     - Pipfile.lock
   processes:
@@ -18,9 +20,15 @@ watchdog:
       on_create:
         - add_to_DVC
         - generate_profile
+      on_modified:
+        - generate_profile
+      on_any_event:
+        - print_event
 commands:
   - command_name: print_message
   - command_name: scaffold_EDA
+  - command_name: gen_dataset
+  - command_name: scaffold_ml_pipeline
   - command_name: inspect_data
     settings:
       ignore_unknown_options: True

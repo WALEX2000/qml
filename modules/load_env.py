@@ -1,7 +1,11 @@
+import time
 from modules.general_utils import getYAML, runProcesses, ProjectSettings, getAssetPath, getEnvConfigPath, LOCAL_CONFIG_FILE_NAME, storeYAML
+from modules.watchdog_manager import launchWatchDogs, stopWatchDogs
 import os
 import shutil
 import venv
+import site
+import sys
 
 def dictToDir(data : dict, path : str = ""):
     """dictToDir expects data to be a dictionary with one top-level key."""
@@ -75,21 +79,32 @@ def loadEnv(envDict : dict, projPath : str) -> dict:
     venvPath = projPath + "/.venv"
     venv.create(venvPath, system_site_packages=True, with_pip=True, prompt=projName)
 
-    return
+    activate_this_file = venvPath + "/bin/activate_this.py"
+    if(not os.path.exists(activate_this_file)):
+        activateAssetPath = getAssetPath("activate_this.py")
+        shutil.copyfile(activateAssetPath, activate_this_file)
+    with open(activate_this_file) as f:
+        code = compile(f.read(), activate_this_file, 'exec')
+        exec(code, dict(__file__=activate_this_file))
 
     print('-> Running Setup Processes')
     setupProcesses : list[str] = setupDict.get('processes')
     runProcesses(setupProcesses)
 
     print('-> Starting Watchdog')
-    
-    print('\n...Setup Complete!')
+    dirList = envDict.get('watchdog')
+    if dirList is not None:
+        launchWatchDogs(dirList)
 
-    # With the confFile perform the necessary loading, in order for the environment to work
-        # May need to create Venv, if it doesn't exist
-        # Or just activate it
-    # Boot up the watchdog inside the venv (make it so it stops when yoou quit the venv (or add a qml exit))
-    pass
+    print('-> Switch terminal shell')
+    os.chdir(projPath)
+    time.sleep(1)
+    activateVenv = '/bin/bash --rcfile ' + projPath + '/.venv/bin/activate'
+    os.system(activateVenv)
+    
+    print("\nClosed qml")
+    if dirList is not None:
+        stopWatchDogs()
 
 def createEnv(envConfPath : str, projPath : str):
     """ gets the existing qml configuration and creates the .qml_env.yaml file in the appropriate place """
