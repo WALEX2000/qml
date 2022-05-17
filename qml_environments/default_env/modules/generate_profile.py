@@ -21,7 +21,7 @@ def getDataset(filePath : str):
 def runEvent(event):
     if(event.is_directory is True): return
     (_, profilePath, profileTitle, fileExtension, metaPath) = getInfoFromDataPath(event.src_path)
-    if(fileExtension == '.tmp' or fileExtension == '.DS_Store'): return
+    if(fileExtension == '.tmp' or fileExtension == '.DS_Store' or fileExtension == '.gitignore'): return
 
     hash = hashFile(event.src_path)
     metaDict = getMetadata(metaPath)
