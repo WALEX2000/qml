@@ -1,3 +1,4 @@
+from pathlib import Path
 import time
 import types
 from modules.general_utils import getYAML, runProcesses, ProjectSettings, getAssetPath, getEnvConfigPath, LOCAL_CONFIG_FILE_NAME, storeYAML
@@ -144,7 +145,7 @@ def loadEnv(envDict : dict, projPath : str, extraArgs : "list[str]") -> dict:
     if dirList is not None:
         stopWatchDogs()
 
-def createEnv(envConfPath : str, projPath : str):
+def createEnv(envConfPath : str, projPath : str, pythonVersion : str):
     """ gets the existing qml configuration and creates the .qml_env.yaml file in the appropriate place """
     print('..Loading Environment Configuration File')
     envDict = getYAML(envConfPath)
@@ -155,11 +156,12 @@ def createEnv(envConfPath : str, projPath : str):
     if(envVersion is None):
         print("ERROR: Provided configuration file '" + envConfPath + "' does not contain a 'version' property")
         raise Exception("Couldn't start qml!")
-    (_, envName) = os.path.split(envConfPath)
+    _, envName = os.path.split(Path(envConfPath).parent)
     
     envFilePath = projPath + '/' + LOCAL_CONFIG_FILE_NAME
     envFileDict = {
         "name":  envName,
-        "version": envVersion
+        "version": envVersion,
+        "python_version": pythonVersion,
     }
     storeYAML(envFilePath, envFileDict)

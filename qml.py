@@ -1,7 +1,7 @@
 import sys
 import click
 import os
-from modules.general_utils import getEnvConfigPath, getModulePakage, getYAML, LOCAL_CONFIG_FILE_NAME, getEnvironmentResourcesPath
+from modules.general_utils import DEFAULT_ENV, getEnvConfigPath, getModulePakage, getYAML, LOCAL_CONFIG_FILE_NAME, getEnvironmentResourcesPath
 from modules.load_env import createEnv, checkEnv, loadEnv
 import importlib
 from pathlib import Path
@@ -70,8 +70,9 @@ if showStart:
     @cli.command(context_settings=dict(ignore_unknown_options=True, allow_extra_args=True))
     @click.option('-p', '--path', type=str, help='Name of root project directory relative to current directory', default=None)
     @click.option('-conf', '--config', type=str, help='Name of configuration file for setup of a new environment', default=None)
+    @click.option('-v', '--version', type=str, help='Python version to ask for if building a new environment', default="<Insert Required Python Version Here (if needed)>")
     @click.pass_context
-    def start(ctx, path, config):
+    def start(ctx, path, config, version):
         if path is None: rootPath = os.getcwd()
         else: rootPath = os.getcwd() + '/' + path
         localConfigPath = rootPath + '/' + LOCAL_CONFIG_FILE_NAME
@@ -82,11 +83,11 @@ if showStart:
                 configAssetPath = localConfigPath
                 setup = False # Pre-existing environment has already been setup
             else:
-                configAssetPath = getEnvConfigPath('.default_env.yaml')
+                configAssetPath = getEnvConfigPath(DEFAULT_ENV)
                 setup = True  # There's no Pre-existing environemnt
         else: # A config was specified (create new)
             setup = True
-            configFileName = '.' + config + '.yaml'
+            configFileName = config
             configAssetPath = getEnvConfigPath(configFileName)
             if (not os.path.exists(configAssetPath)):
                 print('ERROR: Specified configuration file ' + config + ' could not be found in package assets')
@@ -98,7 +99,7 @@ if showStart:
         
         if(setup):  # Need to create new Env
             print('No existing environemnt found. Will start a new one..')
-            createEnv(configAssetPath, rootPath)
+            createEnv(configAssetPath, rootPath, version)
         
         envDict = checkEnv(localConfigPath, rootPath)
         loadEnv(envDict, rootPath, ctx.args)

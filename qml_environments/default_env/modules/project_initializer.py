@@ -3,8 +3,7 @@ import shutil
 from modules.general_utils import CLIexec, CLIcomm, ProjectSettings, getAssetPath
 
 def installDependencies(projRoot: str):
-    os.environ['PIP_NO_CACHE_DIR'] = "off"
-    CLIexec('pipenv install', projRoot)
+    CLIexec('pip install -r requirements.txt', projRoot)
 
 def initDVC(projRoot: str):
     CLIexec('dvc init', projRoot)
@@ -31,7 +30,7 @@ def initGreatExpectations(projRoot: str):
 def runProcess(args : "list[str]"):
     projRoot = ProjectSettings.getProjPath()
     print('\n-> Installing Dependencies')
-    # installDependencies(projRoot)
+    installDependencies(projRoot)
     print('\n-> Initiating Git')
     initGit(projRoot)
     print('\n-> Initiating DVC')

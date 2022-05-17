@@ -6,13 +6,12 @@ import importlib
 from pathlib import Path
 
 LOCAL_CONFIG_FILE_NAME = '.qml_env.yaml'
+DEFAULT_ENV = 'default_env'
 
 def getEnvironmentResourcesPath() -> str:
     envName = ProjectSettings.getEnvName()
-    simpleName, _ = os.path.splitext(envName)
-    simpleName = simpleName[1:]
     parentDir = Path(__file__).parents[1]
-    return str(parentDir) + f"/qml_environments/{simpleName}/"
+    return str(parentDir) + f"/qml_environments/{envName}/"
 
 def getAssetPath(fileName : str) -> str:
     """ Returns the path of an asset to be used inside the project """
@@ -22,14 +21,12 @@ def getAssetPath(fileName : str) -> str:
 
 def getModulePakage():
     envName = ProjectSettings.getEnvName()
-    simpleName, _ = os.path.splitext(envName)
-    simpleName = simpleName[1:]
-    return 'qml_environments.' + simpleName + '.modules.'
+    return 'qml_environments.' + envName + '.modules.'
 
-def getEnvConfigPath(envFileName : str) -> str:
+def getEnvConfigPath(envName : str) -> str:
     """ Returns the path of the specified env name """
     parentDir = Path(__file__).parents[1]
-    envPath = str(parentDir) + "/qml_environments/" + envFileName
+    envPath = str(parentDir) + "/qml_environments/" + envName + "/.env.yaml"
     return envPath
 
 def CLIexecSync(cmd: str, execDir: str = os.getcwd(), display : bool = True, debugInfo : bool = True) -> bool:
