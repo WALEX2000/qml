@@ -91,8 +91,7 @@ def inspectData(filePath: str, args: str, large: bool = False):
 
 @click.argument('filename', type=click.Path(exists=True, dir_okay=False))
 @click.option('--full', '-f', is_flag=True, help='Generate the full report for the data-set. Default is minimal')
-@click.option('--checkpoint', '-ch', is_flag=True, help='Generate a Great Expectations checkpoint for this dataset')
 @click.pass_context
-def runCommand(ctx, filename, full, checkpoint):
+def runCommand(ctx, filename, full):
     parsedArgs = ' '.join(ctx.args)
     inspectData(filename, parsedArgs, full)

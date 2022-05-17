@@ -1,5 +1,6 @@
 import os
-from modules.general_utils import CLIexec, CLIcomm, ProjectSettings
+import shutil
+from modules.general_utils import CLIexec, CLIcomm, ProjectSettings, getAssetPath
 
 def installDependencies(projRoot: str):
     os.environ['PIP_NO_CACHE_DIR'] = "off"
@@ -19,22 +20,26 @@ def gitCommit(message: str, projRoot: str):
     CLIexec(cmd, projRoot)
 
 def addTemplateDatasetToDVC(rootPath: str):
+    assetPath = getAssetPath('winequality-red.csv')
+    dest = rootPath + '/data/winequality-red.csv'
+    shutil.copyfile(assetPath, dest)
     CLIexec('dvc add data/winequality-red.csv --file data/data_conf/winequality-red.csv.dvc', rootPath)
 
 def initGreatExpectations(projRoot: str):
     CLIcomm('great_expectations init', projRoot, ["y"])
 
-def runProcess():
+def runProcess(args : "list[str]"):
     projRoot = ProjectSettings.getProjPath()
     print('\n-> Installing Dependencies')
-    installDependencies(projRoot)
+    # installDependencies(projRoot)
     print('\n-> Initiating Git')
     initGit(projRoot)
     print('\n-> Initiating DVC')
     initDVC(projRoot)
     print('\n-> Initiating Great Expectations')
     initGreatExpectations(projRoot)
-    print('\n-> Adding Template Files')
-    addTemplateDatasetToDVC(projRoot)
+    if '-t' in args:
+        print('\n-> Adding Template Files')
+        addTemplateDatasetToDVC(projRoot)
     print('\n-> Commiting setup to Git')
     gitCommit('Setup Project!', projRoot)

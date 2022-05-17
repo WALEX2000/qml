@@ -67,10 +67,11 @@ if tail == '.venv': # running inside what is possibly a qml environment
         showStart = False
 
 if showStart:
-    @cli.command()
+    @cli.command(context_settings=dict(ignore_unknown_options=True, allow_extra_args=True))
     @click.option('-p', '--path', type=str, help='Name of root project directory relative to current directory', default=None)
     @click.option('-conf', '--config', type=str, help='Name of configuration file for setup of a new environment', default=None)
-    def start(path, config):
+    @click.pass_context
+    def start(ctx, path, config):
         if path is None: rootPath = os.getcwd()
         else: rootPath = os.getcwd() + '/' + path
         localConfigPath = rootPath + '/' + LOCAL_CONFIG_FILE_NAME
@@ -100,7 +101,7 @@ if showStart:
             createEnv(configAssetPath, rootPath)
         
         envDict = checkEnv(localConfigPath, rootPath)
-        loadEnv(envDict, rootPath)
+        loadEnv(envDict, rootPath, ctx.args)
 
 @cli.command()
 def edit():

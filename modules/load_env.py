@@ -96,7 +96,7 @@ def checkEnv(envFilePath : str, projPath : str) -> dict:
     ProjectSettings(projPath, envName, pythonVersion)
     return envConfDict
 
-def loadEnv(envDict : dict, projPath : str) -> dict:
+def loadEnv(envDict : dict, projPath : str, extraArgs : "list[str]") -> dict:
     print('-> Checking Project Structure')
     setupDict = envDict.get('setup')
     folderStructure = setupDict.get('structure')
@@ -127,7 +127,7 @@ def loadEnv(envDict : dict, projPath : str) -> dict:
 
     print('-> Running Setup Processes')
     setupProcesses : list[str] = setupDict.get('processes')
-    runProcesses(setupProcesses)
+    runProcesses(setupProcesses, extraArgs)
 
     print('-> Starting Watchdog')
     dirList = envDict.get('watchdog')

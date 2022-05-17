@@ -3,7 +3,6 @@ setup:
   structure:
     - data:
       - data_conf:
-      - winequality-red.csv
     - src:
       - data_analysis:
         - dataset_generators:

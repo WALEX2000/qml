@@ -103,14 +103,15 @@ def storeYAML(filePath: str, dict: dict):
     with open(filePath, 'w') as file:
         yaml.dump(dict, file)
 
-def runProcesses(processes : "list[str]"):
+def runProcesses(processes : "list[str]", extraArgs : "list[str]"):
     modulePackage = getModulePakage()
     for process in processes:
         module = importlib.import_module(modulePackage + process)
         try:
-            module.runProcess()
-        except:
-            print("\nERROR: Caught exception running setup process: " + process + "'")
+            module.runProcess(extraArgs)
+        except Exception as exc:
+            print("\nERROR: Caught exception running setup process: '" + process + "'")
+            print(exc)
 
 def runEvents(processes : "list[str]", event):
     modulePackage = getModulePakage()
