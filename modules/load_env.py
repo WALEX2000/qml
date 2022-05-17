@@ -1,4 +1,5 @@
 import time
+import types
 from modules.general_utils import getYAML, runProcesses, ProjectSettings, getAssetPath, getEnvConfigPath, LOCAL_CONFIG_FILE_NAME, storeYAML
 from modules.watchdog_manager import launchWatchDogs, stopWatchDogs
 import os
@@ -6,6 +7,25 @@ import shutil
 import venv
 import site
 import sys
+import re
+import click
+
+
+class ExtendedEnvBuilder(venv.EnvBuilder):
+    """ This Builder makes it possible to assign a specific python path to the virtual environment """
+    def __init__(self, *args, **kwargs):
+        self.python = kwargs.pop('python')
+        super().__init__(*args, **kwargs)
+    
+    def ensure_directories(self, env_dir):
+        context = super().ensure_directories(env_dir)
+        executable = self.python
+        dirname, exename = os.path.split(os.path.abspath(executable))
+        context.executable = executable
+        context.python_dir = dirname
+        context.python_exe = exename
+        return context
+
 
 def dictToDir(data : dict, path : str = ""):
     """dictToDir expects data to be a dictionary with one top-level key."""
@@ -24,14 +44,18 @@ def dictToDir(data : dict, path : str = ""):
             else:
                 try:
                     assetPath = getAssetPath(i)
-                    if(os.path.exists(assetPath)): continue
-                    print("Adding: " + assetPath)
+                    fullDest = dest + '/' + i
+                    if(os.path.exists(fullDest)): continue
                     shutil.copy(assetPath, dest)
                 except:
                     print("WARNING: Couldn't add '" + i + "' to the project..")
 
     if isinstance(data, dict):
         return list(data.keys())[0]
+
+def checkValidPythonVersionFormat(pythonVersion : str) -> bool:
+    if re.search("^\d(\.\d)*$", str(pythonVersion)): return True
+    else: return False
 
 def checkEnv(envFilePath : str, projPath : str) -> dict:
     """ Checks if the given environment file path correspondents to an existing qml configuration file, and starts ProjectSettings """
@@ -47,6 +71,10 @@ def checkEnv(envFilePath : str, projPath : str) -> dict:
     if envVersion is None:
         print("Couldn't read version from .qml_env.yaml file")
         raise Exception("Couldn't start qml!")
+    pythonVersion = envDict.get('python_version')
+    if pythonVersion is not None and not checkValidPythonVersionFormat(pythonVersion):
+        pythonVersion = None
+        print(f"Warning: python_version is '{envFilePath}' does not contain a valid format, and will be ignored")
     
     # Get the conf file and check the version (if they match, keep going, else give error)
     envConfPath = getEnvConfigPath(envName)
@@ -65,7 +93,7 @@ def checkEnv(envFilePath : str, projPath : str) -> dict:
         print(f"Version in given '.qml_env.yaml' file is different from the existing version in '{envConfPath}'")
         raise Exception("Couldn't start qml!")
 
-    ProjectSettings(projPath, envName)
+    ProjectSettings(projPath, envName, pythonVersion)
     return envConfDict
 
 def loadEnv(envDict : dict, projPath : str) -> dict:
@@ -74,11 +102,21 @@ def loadEnv(envDict : dict, projPath : str) -> dict:
     folderStructure = setupDict.get('structure')
     dictToDir(folderStructure, projPath)
 
-    print('-> Starting Virtual Environemnt')
+    # Create Venv
     _, projName = os.path.split(projPath)
     venvPath = projPath + "/.venv"
-    venv.create(venvPath, system_site_packages=True, with_pip=True, prompt=projName)
+    if(not os.path.exists(venvPath)):
+        print('-> Creating Virtual Environemnt')
+        pythonVersion = ProjectSettings.getPythonVersion()
+        pythonPath = sys._base_executable
+        if(pythonVersion is not None):
+            print(f"This environment requires a specific python version: '{pythonVersion}'")
+            pythonPath = click.prompt('Please insert the path to the appropriate python executable: ', type=click.Path(exists=True, dir_okay=False))
 
+        builder = ExtendedEnvBuilder(system_site_packages=True, with_pip=True, prompt=projName, python=pythonPath)
+        builder.create(venvPath)
+
+    # Activate Venv
     activate_this_file = venvPath + "/bin/activate_this.py"
     if(not os.path.exists(activate_this_file)):
         activateAssetPath = getAssetPath("activate_this.py")

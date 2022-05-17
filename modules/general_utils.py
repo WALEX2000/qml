@@ -99,9 +99,8 @@ def getYAML(filePath: str) -> dict:
             return None
 
 def storeYAML(filePath: str, dict: dict):
-    mode = 'w'
-    if(not os.path.exists(filePath)): mode = 'x'
-    with open(filePath, mode) as file:
+    os.makedirs(os.path.dirname(filePath), exist_ok=True)
+    with open(filePath, 'w') as file:
         yaml.dump(dict, file)
 
 def runProcesses(processes : "list[str]"):
@@ -128,19 +127,26 @@ class ProjectSettings:
     @staticmethod 
     def getProjPath():
         if ProjectSettings.__instance == None:
-            ProjectSettings()
+            raise Exception("Project Settings has not been initialized")
         return ProjectSettings.__instance.projPath
 
     @staticmethod 
     def getEnvName():
         if ProjectSettings.__instance == None:
-            ProjectSettings()
+            raise Exception("Project Settings has not been initialized")
         return ProjectSettings.__instance.envName
+
+    @staticmethod 
+    def getPythonVersion():
+        if ProjectSettings.__instance == None:
+            raise Exception("Project Settings has not been initialized")
+        return ProjectSettings.__instance.pythonVersion
     
-    def __init__(self, projPath, envName):
+    def __init__(self, projPath, envName, pythonVersion):
         if ProjectSettings.__instance != None:
             return
         else:
             self.projPath = projPath
             self.envName = envName
+            self.pythonVersion = pythonVersion
             ProjectSettings.__instance = self

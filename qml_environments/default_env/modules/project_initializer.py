@@ -2,7 +2,7 @@ import os
 from modules.general_utils import CLIexec, CLIcomm, ProjectSettings
 
 def installDependencies(projRoot: str):
-    os.environ['PIPENV_VENV_IN_PROJECT'] = "enabled"
+    os.environ['PIP_NO_CACHE_DIR'] = "off"
     CLIexec('pipenv install', projRoot)
 
 def initDVC(projRoot: str):

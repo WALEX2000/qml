@@ -6,5 +6,4 @@ def runEvent(event):
     if(filename.endswith('.tmp')):
         return # Ignore .tmp files
 
-    # print('\nEvent: ' + str(event))
-    print('\n Event Exec: ' + sys.executable)
+    print('\nEvent: ' + str(event))
