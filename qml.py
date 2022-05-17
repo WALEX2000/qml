@@ -1,10 +1,9 @@
 import click
 import os
-from modules.general_utils import getEnvConfigPath, getYAML, LOCAL_CONFIG_FILE_NAME
+from modules.general_utils import getEnvConfigPath, getModulePakage, getYAML, LOCAL_CONFIG_FILE_NAME, getEnvironmentResourcesPath
 from modules.load_env import createEnv, checkEnv, loadEnv
 import importlib
 from pathlib import Path
-import sys
 
 @click.group()
 def cli():
@@ -13,8 +12,12 @@ def cli():
 def addCommandsToQml(projRootPath : str, envConfDict : dict):
     envName = envConfDict.get('name')
     if envName is None: return
-    simpleName, _ = os.path.splitext(envName)
-    simpleName = simpleName[1:]
+
+    envFilePath = projRootPath + "/" + LOCAL_CONFIG_FILE_NAME
+    try:
+        envDict = checkEnv(envFilePath, projRootPath)
+    except:
+        return
 
     # Activate Python virtualenv
     venvPath = projRootPath + "/.venv"
@@ -25,13 +28,7 @@ def addCommandsToQml(projRootPath : str, envConfDict : dict):
         code = compile(f.read(), activate_this_file, 'exec')
         exec(code, dict(__file__=activate_this_file))
 
-    envFilePath = projRootPath + "/" + LOCAL_CONFIG_FILE_NAME
-    try:
-        envDict = checkEnv(envFilePath, projRootPath)
-    except:
-        return
-
-    modulePackage = 'modules.' + simpleName + '_modules.'
+    modulePackage = getModulePakage()
     def bindCommand(commandName):
         try:
             module = importlib.import_module(modulePackage + commandName)
@@ -102,8 +99,8 @@ def start(path, config):
 
 @cli.command()
 def edit():
-    qmlDirectory = str(Path(__file__).parents[0])
-    print(f'\nTo Create/Edit QML Environments, work in this directory: {qmlDirectory}\n')
+    dir = str(Path(__file__).parents[0]) + "/qml_environments/"
+    print(f'\nTo Create/Edit QML Environments, work in this directory: {dir}\n')
 
 if __name__ == "__main__":
     cli()

@@ -7,21 +7,29 @@ from pathlib import Path
 
 LOCAL_CONFIG_FILE_NAME = '.qml_env.yaml'
 
-def getAssetPath(fileName : str) -> str:
-    """ Returns the path of an asset to be used inside the project """
+def getEnvironmentResourcesPath() -> str:
     envName = ProjectSettings.getEnvName()
     simpleName, _ = os.path.splitext(envName)
     simpleName = simpleName[1:]
-    folderName = simpleName + "_assets/" 
-    assetsFolderName = "/qml_assets/" + folderName + fileName
     parentDir = Path(__file__).parents[1]
-    filePath = str(parentDir) + assetsFolderName
-    return filePath
+    return str(parentDir) + f"/qml_environments/{simpleName}/"
+
+def getAssetPath(fileName : str) -> str:
+    """ Returns the path of an asset to be used inside the project """
+    envRes = getEnvironmentResourcesPath()
+    assetPath = envRes + "assets/" + fileName
+    return assetPath
+
+def getModulePakage():
+    envName = ProjectSettings.getEnvName()
+    simpleName, _ = os.path.splitext(envName)
+    simpleName = simpleName[1:]
+    return 'qml_environments.' + simpleName + '.modules.'
 
 def getEnvConfigPath(envFileName : str) -> str:
     """ Returns the path of the specified env name """
     parentDir = Path(__file__).parents[1]
-    envPath = str(parentDir) + "/qml_assets/" + envFileName
+    envPath = str(parentDir) + "/qml_environments/" + envFileName
     return envPath
 
 def CLIexecSync(cmd: str, execDir: str = os.getcwd(), display : bool = True, debugInfo : bool = True) -> bool:
@@ -97,10 +105,7 @@ def storeYAML(filePath: str, dict: dict):
         yaml.dump(dict, file)
 
 def runProcesses(processes : "list[str]"):
-    envName = ProjectSettings.getEnvName()
-    simpleName, _ = os.path.splitext(envName)
-    simpleName = simpleName[1:]
-    modulePackage = 'modules.' + simpleName + '_modules.'
+    modulePackage = getModulePakage()
     for process in processes:
         module = importlib.import_module(modulePackage + process)
         try:
@@ -109,10 +114,7 @@ def runProcesses(processes : "list[str]"):
             print("\nERROR: Caught exception running setup process: " + process + "'")
 
 def runEvents(processes : "list[str]", event):
-    envName = ProjectSettings.getEnvName()
-    simpleName, _ = os.path.splitext(envName)
-    simpleName = simpleName[1:]
-    modulePackage = 'modules.' + simpleName + '_modules.'
+    modulePackage = getModulePakage()
     for process in processes:
         module = importlib.import_module(modulePackage + process)
         try:

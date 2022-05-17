@@ -1,2 +1,2 @@
 include LICENSE
-include qml_assets/*
+recursive-include qml_environments *

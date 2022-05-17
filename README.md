@@ -1,10 +1,11 @@
 # QML
 ## Setup
-To install for prod. run: 
-    python setup.py sdist bdist_wheel (To build)
-    pipx install . --force (To install)
+To install for prod. run:
+    rm -rf build dist *.egg-info        (To remove previous build)
+    python setup.py sdist bdist_wheel   (To build)
+    pipx install . --force              (To install)
 To install for dev. run:
-    pipenv shell
+    source .venv/bin/activate
     then, just call qml (It's already on the path)
 
 qml is a tool to quickstart machine learning projects, while supporting lightweight MLOps tasks

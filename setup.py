@@ -1,7 +1,7 @@
 import os
 from setuptools import setup, find_packages
 
-DEPENDENCIES = ['typer', 'click', 'great_expectations', 'watchdog', 'pyyaml']
+DEPENDENCIES = ['typer', 'click', 'watchdog', 'pyyaml']
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -23,9 +23,9 @@ setup(
         "License :: OSI Approved :: BSD License",
     ],
     install_requires=DEPENDENCIES,
-    py_modules = ['qml', 'modules'],
+    py_modules = ['qml', 'modules', 'qml_environments'],
     packages=find_packages(),
-    package_data={'qml_assets': ['*']},
+    package_data={'qml_environments': ['*']},
     include_package_data=True,
     entry_points = {
         'console_scripts': [

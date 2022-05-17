@@ -8,6 +8,10 @@ dvc = {extras = ["gdrive"], version = "*"}
 great-expectations = "*"
 prompt-toolkit = "*"
 rich = "*"
+pandas_profiling = "*"
+ipykernel = "*"
+mlprimitives = "*"
+mlblocks = "*"
 
 [dev-packages]
 ipykernel = "*"
