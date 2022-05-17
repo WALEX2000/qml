@@ -8,15 +8,9 @@ twine = "*"
 wheel = "*"
 click = "*"
 qml = {editable = true, path = "."}
-pandas = "*"
-pandas-profiling = "*"
-great-expectations = "*"
 watchdog = "*"
-mlprimitives = "*"
 
 [dev-packages]
-jupyter = "*"
-notebook = "*"
 
 [requires]
 python_version = "3"

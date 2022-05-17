@@ -1,8 +1,10 @@
 import click
 import os
-from modules.general_utils import getEnvConfigPath, getYAML, LOCAL_CONFIG_FILE_NAME, ProjectSettings
+from modules.general_utils import getEnvConfigPath, getYAML, LOCAL_CONFIG_FILE_NAME
 from modules.load_env import createEnv, checkEnv, loadEnv
 import importlib
+from pathlib import Path
+import sys
 
 @click.group()
 def cli():
@@ -14,6 +16,14 @@ def addCommandsToQml(projRootPath : str, envConfDict : dict):
     simpleName, _ = os.path.splitext(envName)
     simpleName = simpleName[1:]
 
+    # Activate Python virtualenv
+    venvPath = projRootPath + "/.venv"
+    activate_this_file = venvPath + "/bin/activate_this.py"
+    if(not os.path.exists(activate_this_file)):
+        return
+    with open(activate_this_file) as f:
+        code = compile(f.read(), activate_this_file, 'exec')
+        exec(code, dict(__file__=activate_this_file))
 
     envFilePath = projRootPath + "/" + LOCAL_CONFIG_FILE_NAME
     try:
@@ -45,12 +55,15 @@ def addCommandsToQml(projRootPath : str, envConfDict : dict):
         if f is None: continue
         else: cli.command(name=commandName, context_settings=contextSettings)(f)
 
-# TODO This lets the user make use of the commands whenever he's inside the root proj Directory
-# But it'd be better to let him use them whenever he's on the virtualenv shell (so he has access to the commands in all directories of that shell)
-envConfLocation = os.getcwd() + '/' + LOCAL_CONFIG_FILE_NAME
-envConfDict = getYAML(envConfLocation)
-if envConfDict is not None:
-    addCommandsToQml(os.getcwd(), envConfDict)
+virtualEnvironment = os.environ.get('VIRTUAL_ENV')
+tail = None
+if virtualEnvironment is not None:
+    head, tail = os.path.split(os.environ.get('VIRTUAL_ENV'))
+if tail == '.venv': # running inside what is possibly a qml environment
+    envConfLocation = head + '/' + LOCAL_CONFIG_FILE_NAME
+    envConfDict = getYAML(envConfLocation)
+    if envConfDict is not None: # If we were able to read a env YAML file from the location of the .venv, then we can proceed
+        addCommandsToQml(os.getcwd(), envConfDict)
 
 @cli.command()
 @click.option('-p', '--path', type=str, help='Name of root project directory relative to current directory', default=None)
@@ -89,7 +102,8 @@ def start(path, config):
 
 @cli.command()
 def edit():
-    print('This is the edit command. It will print the dir for creating new workflow environments')
+    qmlDirectory = str(Path(__file__).parents[0])
+    print(f'\nTo Create/Edit QML Environments, work in this directory: {qmlDirectory}\n')
 
 if __name__ == "__main__":
     cli()
