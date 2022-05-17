@@ -1,6 +1,6 @@
 import pandas as pd
 from modules.general_utils import CLIexecSync
-from modules.default_env_modules.inspect_data import getInfoFromDataPath, getMetadata, saveMetadata, metaInfoTemplate, hashFile
+from qml_environments.default_env.modules.inspect_data import getInfoFromDataPath, getMetadata, saveMetadata, metaInfoTemplate, hashFile
 from os import path
 import pickle
 #from mlprimitives.datasets import Dataset

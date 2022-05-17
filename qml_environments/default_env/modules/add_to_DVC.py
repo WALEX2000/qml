@@ -1,6 +1,6 @@
 import os
 from modules.general_utils import ProjectSettings, CLIexecSync
-from modules.default_env_modules.inspect_data import metaInfoTemplate, hashFile, saveMetadata
+from qml_environments.default_env.modules.inspect_data import metaInfoTemplate, hashFile, saveMetadata
 
 def runEvent(event):
     rootPath = ProjectSettings.getProjPath()
