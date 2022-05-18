@@ -1,7 +1,7 @@
 import sys
 import click
 import os
-from modules.general_utils import DEFAULT_ENV, getEnvConfigPath, getModulePakage, getYAML, LOCAL_CONFIG_FILE_NAME, getEnvironmentResourcesPath
+from modules.general_utils import DEFAULT_ENV, getEnvConfigPath, getModulePakage, getYAML, LOCAL_CONFIG_FILE_NAME, activateVenv
 from modules.load_env import createEnv, checkEnv, loadEnv
 import importlib
 from pathlib import Path
@@ -20,15 +20,7 @@ def addCommandsToQml(projRootPath : str, envConfDict : dict):
     except:
         return
 
-    # Activate Python virtualenv
-    venvPath = projRootPath + "/.venv"
-    activate_this_file = venvPath + "/bin/activate_this.py"
-    if(not os.path.exists(activate_this_file)):
-        return
-    with open(activate_this_file) as f:
-        code = compile(f.read(), activate_this_file, 'exec')
-        exec(code, dict(__file__=activate_this_file))
-
+    activateVenv()
     modulePackage = getModulePakage()
     def bindCommand(commandName):
         try:

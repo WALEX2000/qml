@@ -4,9 +4,32 @@ import os
 import yaml
 import importlib
 from pathlib import Path
+import sys
+import site
 
 LOCAL_CONFIG_FILE_NAME = '.qml_env.yaml'
 DEFAULT_ENV = 'default_env'
+
+def activateVenv():
+    base = ProjectSettings.getProjPath() + "/.venv"
+    bin_dir = base + "/bin"
+    os.environ["PATH"] = os.pathsep.join([bin_dir] + os.environ.get("PATH", "").split(os.pathsep))
+    os.environ["VIRTUAL_ENV"] = base  # virtual env is right above bin directory
+
+    prev_length = len(sys.path)
+    libDir = base + "/lib"
+    for file in os.listdir(libDir):
+        pkg_dir = os.path.join(libDir, file)
+        if not os.path.isdir(pkg_dir): continue
+        pkg_dir += "/site-packages"
+        if(not os.path.exists(pkg_dir)): continue
+        for lib in pkg_dir.split(os.pathsep):
+            path = os.path.realpath(os.path.join(bin_dir, lib))
+            site.addsitedir(path.decode("utf-8") if "" else path)
+    
+    sys.path[:] = sys.path[prev_length:] + sys.path[0:prev_length]
+    sys.real_prefix = sys.prefix
+    sys.prefix = base
 
 def getEnvironmentResourcesPath() -> str:
     envName = ProjectSettings.getEnvName()

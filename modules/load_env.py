@@ -1,7 +1,7 @@
 from pathlib import Path
 import time
 import types
-from modules.general_utils import getYAML, runProcesses, ProjectSettings, getAssetPath, getEnvConfigPath, LOCAL_CONFIG_FILE_NAME, storeYAML
+from modules.general_utils import activateVenv, getYAML, runProcesses, ProjectSettings, getAssetPath, getEnvConfigPath, LOCAL_CONFIG_FILE_NAME, storeYAML
 from modules.watchdog_manager import launchWatchDogs, stopWatchDogs
 import os
 import shutil
@@ -118,13 +118,7 @@ def loadEnv(envDict : dict, projPath : str, extraArgs : "list[str]") -> dict:
         builder.create(venvPath)
 
     # Activate Venv
-    activate_this_file = venvPath + "/bin/activate_this.py"
-    if(not os.path.exists(activate_this_file)):
-        activateAssetPath = getAssetPath("activate_this.py")
-        shutil.copyfile(activateAssetPath, activate_this_file)
-    with open(activate_this_file) as f:
-        code = compile(f.read(), activate_this_file, 'exec')
-        exec(code, dict(__file__=activate_this_file))
+    activateVenv()
 
     print('-> Running Setup Processes')
     setupProcesses : list[str] = setupDict.get('processes')
@@ -138,8 +132,8 @@ def loadEnv(envDict : dict, projPath : str, extraArgs : "list[str]") -> dict:
     print('-> Switch terminal shell')
     os.chdir(projPath)
     time.sleep(1)
-    activateVenv = '/bin/bash --rcfile ' + projPath + '/.venv/bin/activate'
-    os.system(activateVenv)
+    switchShell = '/bin/bash --rcfile ' + projPath + '/.venv/bin/activate'
+    os.system(switchShell)
     
     print("\nClosed qml")
     if dirList is not None:
