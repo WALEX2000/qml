@@ -1,7 +1,7 @@
 import os
 from setuptools import setup, find_packages
 
-DEPENDENCIES = ['typer', 'click', 'watchdog', 'pyyaml']
+DEPENDENCIES = ['click', 'watchdog', 'pyyaml']
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()

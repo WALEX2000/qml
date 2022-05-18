@@ -1,5 +1,4 @@
 import os
-import sys
 
 def runEvent(event):
     (_, filename) = os.path.split(event.src_path)

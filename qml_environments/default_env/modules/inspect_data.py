@@ -5,10 +5,9 @@ from webbrowser import open as openURL
 import click
 
 metaInfoTemplate = {
-    "type": "",
     "version": "",    
     "pandas_profile_hash": "",
-    "profiles": []
+    "origin": "imported" # Can also be of type <MLPipeline>.<MLPipeline_input>
 }
 
 def hashFile(filename):
@@ -38,8 +37,6 @@ def getMetadata(metaPath):
         dvcDict = getYAML(metaPath)
         if(dvcDict is not None):
             metaDict = dvcDict.get('meta')
-    else:
-        print("WARNING: The data file you are inspecting is currently not being tracked by DVC. Please consider adding it to DVC tracking.")
     return metaDict
 
 def getInfoFromDataPath(filePath : str):

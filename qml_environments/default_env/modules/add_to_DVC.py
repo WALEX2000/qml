@@ -1,14 +1,14 @@
 import os
 from modules.general_utils import ProjectSettings, CLIexecSync
-from qml_environments.default_env.modules.inspect_data import metaInfoTemplate, hashFile, saveMetadata
+from qml_environments.default_env.modules.inspect_data import metaInfoTemplate, saveMetadata
 
 def runEvent(event):
     rootPath = ProjectSettings.getProjPath()
     dataConfPath = rootPath + '/data/data_conf/' # TODO Change path to accomodate data and models
 
     (_, filename) = os.path.split(event.src_path)
-    if(filename.endswith('.tmp') or filename.endswith('.DS_Store')):
-        return # Ignore .tmp files and .DS_Store files
+    if(filename.endswith('.tmp') or filename.endswith('.DS_Store') or filename.endswith('.gitignore')):
+        return # Ignore .tmp files and .DS_Store files and .gitignore files
 
     dvcFilePath = dataConfPath + filename + '.dvc'
     if(os.path.exists(dvcFilePath)):
@@ -18,6 +18,5 @@ def runEvent(event):
     CLIexecSync(command, rootPath, display=False)
 
     metaInfo = metaInfoTemplate.copy()
-    metaInfo['type'] = "Data" # TODO Determine based on what is being submited in the event path
     metaInfo['version'] = '.0' # TODO Change according to how it should be changed
     saveMetadata(dvcFilePath, metaInfo)
