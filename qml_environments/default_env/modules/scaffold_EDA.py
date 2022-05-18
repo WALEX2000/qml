@@ -6,7 +6,6 @@ from os import path
 
 NB_PATH = ProjectSettings.getProjPath() + '/src/data_analysis/'
 
-# TODO add meta information on the autoviz file
 # TODO install autoviz beforehand
 # TODO If file already exists, create a new one
 # TODO add option for .dataset load
@@ -16,21 +15,26 @@ NB_PATH = ProjectSettings.getProjPath() + '/src/data_analysis/'
 def runCommand(filename, features):
     """ Create a jupyter notebook file with AutoViz inspecting features in dataset 'filename' and add to meta of filename """
     absFilePath = path.abspath(filename) # TODO Replace absolute with a relative path that works from the place the file is
-    (filePathHead, filePathTail) = path.split(filename) # Head is path info, tail is name info
+    (_, filePathTail) = path.split(filename) # Head is path info, tail is name info
     datasetName, _ = path.splitext(filePathTail)
-    metaFilePath = filePathHead + '/data_conf/' + filePathTail + '.dvc'
 
     notebook = nbf.new_notebook()
     text = f"""\
 # {filePathTail} Explorative Data Analysis"""
 
     importCode = """\
-from autoviz.AutoViz_Class import AutoViz_Class"""
+from autoviz.AutoViz_Class import AutoViz_Class
+%matplotlib inline
+import pandas as pd"""
 
     setupCode = f"""\
 dataFile = '{absFilePath}'
-targetVar = 'UNKNOWN' # Provide Target variable in case it is not specified
+targetVar = '<INSERT NAME OF TARGET VARIABLE>' # Provide Target variable in case it is not specified
 numAnalyzedCols = {features}"""
+    
+    pandasCode = f"""\
+df = pd.read_csv(dataFile)
+df.head()"""
 
     EDACode = """\
 AV = AutoViz_Class()
@@ -48,7 +52,7 @@ dft = AV.AutoViz(
 )"""
 
     notebook['cells'] = [nbf.new_markdown_cell(text),
-    nbf.new_code_cell(importCode), nbf.new_code_cell(setupCode), nbf.new_code_cell(EDACode)]
+    nbf.new_code_cell(importCode), nbf.new_code_cell(setupCode), nbf.new_code_cell(pandasCode), nbf.new_code_cell(EDACode)]
 
     nbFilePath = NB_PATH + datasetName + '_analysis.ipynb'
     with open(nbFilePath, 'w') as f:

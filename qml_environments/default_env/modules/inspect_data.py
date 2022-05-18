@@ -60,7 +60,7 @@ def inspectData(filePath: str, args: str, large: bool = False):
     if(datasetMeta is None): newMeta = metaInfoTemplate.copy()
     else: newMeta = datasetMeta
 
-    if(len(args) == 0): # If no arguments were provided
+    if(len(args) == 0 and not large): # If no arguments were provided
         if(newMeta['pandas_profile_hash'] != hash or not path.exists(profilePath)): #Outdated or non-existent
             print("Profile hash is outdated. Generating new profile report..")
         else:
