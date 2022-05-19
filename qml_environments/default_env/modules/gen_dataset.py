@@ -15,7 +15,7 @@ def runCommand(datapath):
     dataName, _ = path.splitext(filePathTail)
 
     dataPathRelativeToGen = '../../../data/' + filePathTail
-    datasetPathRelativeToGen = '../../../data/' + dataName + '.dataset'
+    datasetPathRelativeToGen = '../../../data/data_conf/' + filePathTail + '.dataset'
 
     notebook = nbf.new_notebook()
     text = f"""\
@@ -48,6 +48,7 @@ print(dataset.target.head())
 print(dataset.data.head())"""
 
     saveDatasetCode = f"""\
+# Save Dataset
 with open('{datasetPathRelativeToGen}', 'wb') as datasetFile:
     pickle.dump(dataset, datasetFile)"""
 

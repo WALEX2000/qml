@@ -47,6 +47,7 @@ pipeline.get_diagram()"""
 pprint(pipeline.get_hyperparameters())"""
 
     savePipelineCode = f"""\
+# Warning! Do not change the naming convention
 pipeline.save('./pipeline_annotations/{name}_pipeline.json')"""
 
     notebook['cells'] = [nbf.new_markdown_cell(text),

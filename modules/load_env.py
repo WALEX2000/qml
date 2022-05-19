@@ -78,7 +78,7 @@ def checkEnv(envFilePath : str, projPath : str) -> dict:
     # Get the conf file and check the version (if they match, keep going, else give error)
     envConfPath = getEnvConfigPath(envName)
     if(not os.path.exists(envConfPath)):
-        print(f"Couldn't find configuration file with name '{envName}' in qml resources")
+        print(f"Couldn't find configuration file with name '{envName}' in qml resources: '{envConfPath}'")
         raise Exception("Couldn't start qml!")
     envConfDict = getYAML(envConfPath)
     if(envConfDict is None):

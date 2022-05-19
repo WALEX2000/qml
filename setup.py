@@ -8,10 +8,10 @@ def read(fname):
 
 setup(
     name = "qml",
-    version = "0.0.1",
+    version = "0.1.0",
     author = "Alexandre Carqueja",
     author_email = "up201705049@up.pt",
-    description = ("A framework to manage quick Machine Learning projects"),
+    description = ("A framework to manage local Machine Learning pipelines"),
     license = "MIT",
     keywords = "machine learning devops mlops",
     #url = "",
@@ -32,5 +32,5 @@ setup(
             'qml=qml:cli'
         ]
     },
-    python_requires='>=3.7'
+    python_requires='~=3.8'
 )
