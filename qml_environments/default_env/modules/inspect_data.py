@@ -4,10 +4,8 @@ from modules.general_utils import CLIexec, storeYAML, getYAML
 from webbrowser import open as openURL
 import click
 
-metaInfoTemplate = {
-    "version": "",    
+metaInfoTemplate = { 
     "pandas_profile_hash": "",
-    "origin": "imported" # Can also be of type <MLPipeline>.<MLPipeline_input>
 }
 
 def hashFile(filename):
@@ -77,14 +75,6 @@ def inspectData(filePath: str, args: str, large: bool = False):
     elif(args.count('-h') == 0): # If call wasn't a mere help prompt
         newMeta['pandas_profile_hash'] = hash
         saveMetadata(metaPath, newMeta)
-
-
-    """
-    jsonTmpFile = tempfile.NamedTemporaryFile(suffix='.json')
-    jsonContent = b''.join(jsonTmpFile.readlines())
-    jsonTmpFile.close()
-    jsonContent
-    """
 
 @click.argument('filename', type=click.Path(exists=True, dir_okay=False))
 @click.option('--full', '-f', is_flag=True, help='Generate the full report for the data-set. Default is minimal')

@@ -18,5 +18,4 @@ def runEvent(event):
     CLIexecSync(command, rootPath, display=False)
 
     metaInfo = metaInfoTemplate.copy()
-    metaInfo['version'] = '.0' # TODO Change according to how it should be changed
     saveMetadata(dvcFilePath, metaInfo)

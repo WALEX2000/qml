@@ -3,14 +3,16 @@ from qml_environments.default_env.modules.inspect_data import getInfoFromDataPat
 from os import path
 
 def runEvent(event):
-    if(event.is_directory is True): return
+    if(event.is_directory is True or not path.exists(event.src)): return
     (dataFileName, profilePath, profileTitle, fileExtension, metaPath) = getInfoFromDataPath(event.src_path)
     if(fileExtension == '.tmp' or dataFileName == '.DS_Store' or dataFileName == '.gitignore'): return
 
     hash = hashFile(event.src_path)
     metaDict = getMetadata(metaPath)
     if(metaDict is None): return # Only generate profile for tracked files
-    elif(metaDict.get('pandas_profile_hash') == hash and path.exists(profilePath)): return
+    elif(metaDict.get('pandas_profile_hash') == 'loading' or (metaDict.get('pandas_profile_hash') == hash and path.exists(profilePath))): return
+    metaDict['pandas_profile_hash'] = 'loading'
+    saveMetadata(metaPath, metaDict)
     metaDict['pandas_profile_hash'] = hash
 
     if(event.is_directory):
