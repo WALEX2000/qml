@@ -1,5 +1,4 @@
 import click
-from os import path
 import nbformat.v4 as nbf
 from nbformat import write as nbfWrite
 from modules.general_utils import ProjectSettings
@@ -40,15 +39,20 @@ outputs = {
     "y": "dataset_labels"
 }
 
-pipeline = MLPipeline(primitives=primitives, init_params=init_params, outputs=outputs)"""
+pipeline = MLPipeline(primitives=primitives, init_params=init_params, outputs=outputs)
+pipeline.get_diagram()"""
 
     hyperparametersLookupCode = """\
 # See Pipeline parameters
 pprint(pipeline.get_hyperparameters())"""
 
+    savePipelineCode = f"""\
+pipeline.save('./pipeline_annotations/{name}_pipeline.json')"""
+
     notebook['cells'] = [nbf.new_markdown_cell(text),
     nbf.new_code_cell(importCode), nbf.new_code_cell(primitiveLookupCode),
-    nbf.new_code_cell(mlPipelineCode), nbf.new_code_cell(hyperparametersLookupCode)]
+    nbf.new_code_cell(mlPipelineCode), nbf.new_code_cell(hyperparametersLookupCode),
+    nbf.new_code_cell(savePipelineCode)]
 
     nbFilePath = NB_PATH + name + '.ipynb'
     with open(nbFilePath, 'w') as f:
