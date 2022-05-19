@@ -1,4 +1,6 @@
+import sys
 import click
+import mlblocks
 from modules.general_utils import ProjectSettings
 from os import path
 from mlblocks import MLPipeline
@@ -6,6 +8,7 @@ from mlprimitives.datasets import Dataset
 import pickle
 
 PIPELINE_DIR = ProjectSettings.getProjPath() + '/src/ml_pipelines/pipeline_annotations/'
+PRIMITIVES_PATH = ProjectSettings.getProjPath() + '/src/ml_pipelines/mlblocks_primitives/'
 
 @click.argument('pipeline', type=str)
 @click.argument('datapath', type=click.Path(exists=True, dir_okay=False))
@@ -22,8 +25,12 @@ def runCommand(pipeline, datapath):
         print(f"ERROR: The data you specified '{datapath}' does not have an associated dataset. Please create one.")
         return
     
+    # print(sys.path)
+    # return
+    mlblocks.add_primitives_path(PRIMITIVES_PATH)
     mlPipeline = MLPipeline.load(pipelinePath)
-    dataset : Dataset = pickle.load(datasetPath)
+    with open(datasetPath, 'rb') as datasetFile:
+        dataset : Dataset = pickle.load(datasetFile)
     X_train, _, y_train, _ = dataset.get_splits()
     mlPipeline.fit(X_train, y_train)
     # Save the resulting output (Either a model, or a dataset, or something)

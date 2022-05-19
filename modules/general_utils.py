@@ -26,6 +26,7 @@ def activateVenv():
         for lib in pkg_dir.split(os.pathsep):
             path = os.path.realpath(os.path.join(bin_dir, lib))
             site.addsitedir(path.decode("utf-8") if "" else path)
+        site.addsitedir(ProjectSettings.getProjPath())
     
     sys.path[:] = sys.path[prev_length:] + sys.path[0:prev_length]
     sys.real_prefix = sys.prefix
