@@ -63,6 +63,13 @@ def runCommand(ctx, pipeline, datapath, save_data, full_data, start_index, end_i
     print("...Fitting Pipeline")
     context : dict = mlPipeline.fit(used_X, used_y, output_=outputNum, start_=start_index, **extraArgs)
     print("...Fitting Completed Successfuly!")
+    if(save_pipeline):
+        print("...Saving Pipeline")
+        # Get the path of where to save the pipeline
+        # Pickle the pipeline object there
+        # Add it to DVC
+        # Add the appropriate Meta information to .dvc
+
     if(save_data == ""): return #TODO Save the entire context somewhere?
     
     newDataPath = DATA_DIR + save_data + ".csv"

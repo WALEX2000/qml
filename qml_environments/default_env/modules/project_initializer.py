@@ -1,4 +1,5 @@
-import os
+import sys
+from os import path, makedirs
 import shutil
 from modules.general_utils import CLIexec, CLIcomm, ProjectSettings, getAssetPath
 
@@ -27,10 +28,29 @@ def addTemplateDatasetToDVC(rootPath: str):
 def initGreatExpectations(projRoot: str):
     CLIcomm('great_expectations init', projRoot, ["y"])
 
+def addCustomPackages(projRoot: str):
+    site_packages = ""
+    for sys_path in sys.path:
+        _, tail = path.split(sys_path)
+        if(tail == "site-packages" and sys_path.startswith(projRoot)):
+            site_packages = sys_path
+            break
+    if(site_packages == ""): return
+
+    destFolder = site_packages + "/qml_custom/"
+    makedirs(destFolder, exist_ok=True)
+    open(destFolder+'__init__.py', 'a').close()
+
+    data_handler_asset_path = getAssetPath('data_handler.py')
+    data_handler_dest = destFolder + 'data_handler.py'
+    shutil.copyfile(data_handler_asset_path, data_handler_dest)
+
 def runProcess(args : "list[str]"):
     projRoot = ProjectSettings.getProjPath()
     print('\n-> Installing Dependencies')
     installDependencies(projRoot)
+    print('\n-> Add Custom Packages')
+    addCustomPackages(projRoot)
     print('\n-> Initiating Git')
     initGit(projRoot)
     print('\n-> Initiating DVC')
