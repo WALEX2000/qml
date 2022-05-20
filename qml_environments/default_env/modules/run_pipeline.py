@@ -12,8 +12,16 @@ DATACONF_DIR = ProjectSettings.getProjPath() + '/data/data_conf/'
 @click.option('--full-data', '-fd', is_flag=True, help='Run the pipeline without spslitting the dataset into train and test sets (should only be used when all the data is being transformed)')
 @click.option('--start-index', '-si', type=int, help='The index of the primitive in which to start running the pipeline', default=0)
 @click.option('--end-index', '-ei', type=int, help='The index of the primitive in which to stop running the pipeline', default=-1)
-def runCommand(pipeline, datapath, save_data, full_data, start_index, end_index):
-    """Runs the given pipeline with the given data"""
+@click.option('--save-pipeline', '-sp', is_flag=True, help='Save the pipeline after it has been trained on the given data')
+@click.pass_context
+def runCommand(ctx, pipeline, datapath, save_data, full_data, start_index, end_index, save_pipeline):
+    """Runs the given pipeline with the given data, and, optionally, with the given extra arguments"""
+    if(len(ctx.args) % 2 != 0):
+        print("ERROR: The Extra arguments you've passed do not comply with the appropriate format.\nPlease use: --arg value")
+        return
+    extraArgs = {ctx.args[i][2:]: ctx.args[i+1] for i in range(0, len(ctx.args), 2)}
+
+    print("...Starting Pipeline Run")
     from mlprimitives.datasets import Dataset
     from mlblocks import add_primitives_path, MLPipeline
     from os import path
@@ -32,7 +40,7 @@ def runCommand(pipeline, datapath, save_data, full_data, start_index, end_index)
         return
     
     add_primitives_path(PRIMITIVES_PATH)
-    mlPipeline = MLPipeline.load(pipelinePath)
+    mlPipeline : MLPipeline = MLPipeline.load(pipelinePath)
     with open(datasetPath, 'rb') as datasetFile:
         dataset : Dataset = pickle_load(datasetFile)
     
@@ -52,7 +60,9 @@ def runCommand(pipeline, datapath, save_data, full_data, start_index, end_index)
     else:
         outputNum = end_index
 
-    context : dict = mlPipeline.fit(used_X, used_y, output_=outputNum, start_=start_index)
+    print("...Fitting Pipeline")
+    context : dict = mlPipeline.fit(used_X, used_y, output_=outputNum, start_=start_index, **extraArgs)
+    print("...Fitting Completed Successfuly!")
     if(save_data == ""): return #TODO Save the entire context somewhere?
     
     newDataPath = DATA_DIR + save_data + ".csv"
