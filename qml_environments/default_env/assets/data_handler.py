@@ -12,6 +12,7 @@ class DataHandler:
         """Given the path of the data, loads and returns its handler"""
         head, tail = path.split(dataPath)
         handlerPath = head + "/data_conf/" + tail + ".handler"
+        if(not path.exists(handlerPath)): return None
         with open(handlerPath, 'rb') as handlerFile:
             dataHandler : DataHandler = pickle.load(handlerFile)
         dataHandler.setDataPath(dataPath)
@@ -39,10 +40,10 @@ class DataHandler:
         test_data = df.sample(frac=self._testRatio, random_state=77)
         train_data = df.drop(test_data.index)
 
-        Y_train = train_data.iloc[:,self._targetVarName]
-        X_train = train_data.drop(Y_train.columns, axis = 1)
-        Y_test = test_data.iloc[:,self._targetVarName]
-        X_test = test_data.drop(Y_test.columns, axis = 1)
+        X_train = train_data.drop(self._targetVarName, axis = 1)
+        Y_train = train_data.loc[:,self._targetVarName]
+        X_test = test_data.drop(self._targetVarName, axis = 1)
+        Y_test = test_data.loc[:,self._targetVarName]
 
         return X_train, X_test, Y_train, Y_test
 
@@ -51,5 +52,5 @@ class DataHandler:
     
     def save(self, handlerPath):
         self._dataframe = None # The whole point is that the data is not saved here, but stays on the file        
-        with open(handlerPath, 'wb') as datasetFile:
-            pickle.dump(self, datasetFile)
+        with open(handlerPath, 'wb') as handlerFile:
+            pickle.dump(self, handlerFile)

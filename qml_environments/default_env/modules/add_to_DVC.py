@@ -4,7 +4,7 @@ from qml_environments.default_env.modules.inspect_data import metaInfoTemplate, 
 
 def runEvent(event):
     rootPath = ProjectSettings.getProjPath()
-    dataConfPath = rootPath + '/data/data_conf/' # TODO Change path to accomodate data and models
+    dataConfPath = rootPath + '/data/data_conf/'
 
     (_, filename) = os.path.split(event.src_path)
     if(filename.endswith('.tmp') or filename.endswith('.DS_Store') or filename.endswith('.gitignore')):

@@ -1,7 +1,9 @@
 import click
-from modules.general_utils import ProjectSettings
+from modules.general_utils import ProjectSettings, CLIexecSync
+from qml_environments.default_env.modules.inspect_data import saveMetadata, hashFile
 
 PIPELINE_DIR = ProjectSettings.getProjPath() + '/src/ml_pipelines/pipeline_annotations/'
+FITTED_PIPELINE_DIR = ProjectSettings.getProjPath() + '/src/ml_pipelines/fitted_pipelines/'
 PRIMITIVES_PATH = ProjectSettings.getProjPath() + '/src/ml_pipelines/mlblocks_primitives/'
 DATA_DIR = ProjectSettings.getProjPath() + '/data/'
 DATACONF_DIR = ProjectSettings.getProjPath() + '/data/data_conf/'
@@ -9,7 +11,7 @@ DATACONF_DIR = ProjectSettings.getProjPath() + '/data/data_conf/'
 @click.argument('pipeline', type=str)
 @click.argument('datapath', type=click.Path(exists=True, dir_okay=False))
 @click.option('--save-data', '-sd', type=str, help='Save the data that is outputted by the fit process, with the specified name.', default = "")
-@click.option('--full-data', '-fd', is_flag=True, help='Run the pipeline without spslitting the dataset into train and test sets (should only be used when all the data is being transformed)')
+@click.option('--full-data', '-fd', is_flag=True, help='Run the pipeline without spslitting the data into train and test sets (should only be used when all the data is being transformed)')
 @click.option('--start-index', '-si', type=int, help='The index of the primitive in which to start running the pipeline', default=0)
 @click.option('--end-index', '-ei', type=int, help='The index of the primitive in which to stop running the pipeline', default=-1)
 @click.option('--save-pipeline', '-sp', is_flag=True, help='Save the pipeline after it has been trained on the given data')
@@ -22,29 +24,25 @@ def runCommand(ctx, pipeline, datapath, save_data, full_data, start_index, end_i
     extraArgs = {ctx.args[i][2:]: ctx.args[i+1] for i in range(0, len(ctx.args), 2)}
 
     print("...Starting Pipeline Run")
-    from mlprimitives.datasets import Dataset
+    from qml_custom.data_handler import DataHandler
     from mlblocks import add_primitives_path, MLPipeline
     from os import path
-    from pickle import load as pickle_load, dump as pickle_dump
+    from pickle import dump as pickle_dump
     import pandas as pd
     
     pipelinePath = PIPELINE_DIR + pipeline + "_pipeline.json"
     if(not path.exists(pipelinePath)):
         print(f"ERROR: The pipeline you specified '{pipeline}' could not be found in: '{pipelinePath}'")
         return
-    # From the data file find the dataset / dataframe (must exist)
-    dataDir, dataname = path.split(datapath)
-    datasetPath = dataDir + "/data_conf/" + dataname + ".dataset"
-    if(not path.exists(datasetPath)):
-        print(f"ERROR: The data you specified '{datapath}' does not have an associated dataset. Please create one.")
-        return
     
     add_primitives_path(PRIMITIVES_PATH)
     mlPipeline : MLPipeline = MLPipeline.load(pipelinePath)
-    with open(datasetPath, 'rb') as datasetFile:
-        dataset : Dataset = pickle_load(datasetFile)
+    handler : DataHandler = DataHandler.load(datapath)
+    if(handler is None):
+        print(f"ERROR: The data you specified '{datapath}' does not have an associated handler. Please create one.")
+        return
     
-    X_train, X_test, y_train, y_test = dataset.get_splits()
+    X_train, X_test, y_train, y_test = handler.getSplit()
     X_full = pd.concat([X_train, X_test])
     y_full = pd.concat([y_train, y_test])
 
@@ -65,13 +63,27 @@ def runCommand(ctx, pipeline, datapath, save_data, full_data, start_index, end_i
     print("...Fitting Completed Successfuly!")
     if(save_pipeline):
         print("...Saving Pipeline")
-        # Get the path of where to save the pipeline
-        # Pickle the pipeline object there
-        # Add it to DVC
-        # Add the appropriate Meta information to .dvc
+        pipelinePath = FITTED_PIPELINE_DIR + pipeline + "_fitted.pipeline"
+        with open(pipelinePath, 'wb') as pipelineFile:
+            pickle_dump(mlPipeline, pipelineFile)
+        
+        dvcPath = pipelinePath + ".dvc"
+        if(not path.exists(dvcPath)):
+            print("...Adding Pipeline to DVC")
+            command = 'dvc add ' + pipelinePath
+            CLIexecSync(command, ProjectSettings.getProjPath(), display=False)
+        
+        _, dataName = path.split(datapath)
+        hashValue = hashFile(datapath)
+        trainedWith = dataName + '#' + hashValue
+        metaInfo = {
+            'trained_with':trainedWith,
+            'score':'None'
+        }
+        saveMetadata(dvcPath, metaInfo)
+        print("...Pipeline Save Complete!")
 
-    if(save_data == ""): return #TODO Save the entire context somewhere?
-    
+    if(save_data == ""): return
     newDataPath = DATA_DIR + save_data + ".csv"
     print(f"...Saving data to '{newDataPath}'")
     
@@ -101,8 +113,6 @@ def runCommand(ctx, pipeline, datapath, save_data, full_data, start_index, end_i
         fullY.sort_index(inplace=True)
         fullDataset : pd.DataFrame = fullX.join(fullY)
     
-    dataset.data = fullDataset
     fullDataset.to_csv(newDataPath, index=False)
-    newDatasetPath = DATACONF_DIR + save_data + ".csv.dataset"
-    with open(newDatasetPath, 'wb') as datasetFile:
-        pickle_dump(dataset, datasetFile)
+    newHandlerPath = DATACONF_DIR + save_data + ".csv.handler"
+    handler.save(newHandlerPath)
