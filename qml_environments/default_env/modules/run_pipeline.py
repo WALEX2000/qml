@@ -1,12 +1,50 @@
 import click
+from mlblocks import MLPipeline
 from modules.general_utils import ProjectSettings, CLIexecSync
 from qml_environments.default_env.modules.inspect_data import saveMetadata, hashFile
+from qml_custom.data_handler import DataHandler
 
 PIPELINE_DIR = ProjectSettings.getProjPath() + '/src/ml_pipelines/pipeline_annotations/'
 FITTED_PIPELINE_DIR = ProjectSettings.getProjPath() + '/src/ml_pipelines/fitted_pipelines/'
 PRIMITIVES_PATH = ProjectSettings.getProjPath() + '/src/ml_pipelines/mlblocks_primitives/'
 DATA_DIR = ProjectSettings.getProjPath() + '/data/'
 DATACONF_DIR = ProjectSettings.getProjPath() + '/data/data_conf/'
+
+def autoTune(mlPipeline : MLPipeline, extraArgs, start_index, outputNum, handler : DataHandler):
+    from btb.tuning import Tunable
+    from btb import BTBSession
+    import pandas as pd
+    hyperParamsDict = mlPipeline.get_tunable_hyperparameters()
+    tunablesDict = {}
+    X, _, y, _ = handler.getSplit()
+    fullDataset : pd.DataFrame = X.join(y)
+    train = fullDataset.sample(frac=0.8, random_state=25)
+    val = fullDataset.drop(train.index)
+    X_train = train.drop(columns=y.name)
+    X_val = val.drop(columns=y.name)
+    y_train = train.loc[:,y.name]
+    y_val = val.loc[:,y.name]
+
+    for block in hyperParamsDict:
+        dictionary = hyperParamsDict[block]
+        tunable : Tunable = Tunable.from_dict(dictionary)
+        tunablesDict[block] = tunable
+    
+    def runPipeline(blockName, hyperParams):
+        hyperDict = {blockName : hyperParams}
+        mlPipeline.set_hyperparameters(hyperDict)
+        try:
+            mlPipeline.fit(X_train, y_train, output_=outputNum, start_=start_index, **extraArgs)
+            pred = mlPipeline.predict(X_val)
+            score = handler.score(y_val, pred)
+        except:
+            score = 0
+        return score
+    
+    session = BTBSession(tunables=tunablesDict,scorer=runPipeline, verbose=True)
+    best_proposal = session.run(100)
+    print('Validation Score: ' + str(best_proposal['score']))
+    return best_proposal
 
 @click.argument('pipeline', type=str)
 @click.argument('datapath', type=click.Path(exists=True, dir_okay=False))
@@ -15,8 +53,9 @@ DATACONF_DIR = ProjectSettings.getProjPath() + '/data/data_conf/'
 @click.option('--start-index', '-si', type=int, help='The index of the primitive in which to start running the pipeline', default=0)
 @click.option('--end-index', '-ei', type=int, help='The index of the primitive in which to stop running the pipeline', default=-1)
 @click.option('--save-pipeline', '-sp', is_flag=True, help='Save the pipeline after it has been trained on the given data')
+@click.option('--auto-tune', '-at', is_flag=True, help='Optimize the ML Networks Hyperparameters automatically')
 @click.pass_context
-def runCommand(ctx, pipeline, datapath, save_data, full_data, start_index, end_index, save_pipeline):
+def runCommand(ctx, pipeline, datapath, save_data, full_data, start_index, end_index, save_pipeline, auto_tune):
     """Runs the given pipeline with the given data, and, optionally, with the given extra arguments"""
     if(len(ctx.args) % 2 != 0):
         print("ERROR: The Extra arguments you've passed do not comply with the appropriate format.\nPlease use: --arg value")
@@ -24,7 +63,6 @@ def runCommand(ctx, pipeline, datapath, save_data, full_data, start_index, end_i
     extraArgs = {ctx.args[i][2:]: ctx.args[i+1] for i in range(0, len(ctx.args), 2)}
 
     print("...Starting Pipeline Run")
-    from qml_custom.data_handler import DataHandler
     from mlblocks import add_primitives_path, MLPipeline
     from os import path
     from pickle import dump as pickle_dump
@@ -57,10 +95,18 @@ def runCommand(ctx, pipeline, datapath, save_data, full_data, start_index, end_i
         outputNum = len(mlPipeline.blocks) - 1
     else:
         outputNum = end_index
-
+    
+    if(auto_tune):
+        print("...Starting Pipeline Auto-Tune")
+        best_proposal = autoTune(mlPipeline, extraArgs, start_index, outputNum, handler)
+        newHyperParameters = {best_proposal['name'] : best_proposal['config']}
+        mlPipeline.set_hyperparameters(newHyperParameters)
+        print("...Pipeline Auto-Tune Complete!")
+    
     print("...Fitting Pipeline")
     context : dict = mlPipeline.fit(used_X, used_y, output_=outputNum, start_=start_index, **extraArgs)
     print("...Fitting Completed Successfuly!")
+
     if(save_pipeline):
         print("...Saving Pipeline")
         pipelinePath = FITTED_PIPELINE_DIR + pipeline + "_fitted.pipeline"
