@@ -55,8 +55,6 @@ def runProcess(args : "list[str]"):
     initGit(projRoot)
     print('\n-> Initiating DVC')
     initDVC(projRoot)
-    print('\n-> Initiating Great Expectations')
-    initGreatExpectations(projRoot)
     if '-t' in args:
         print('\n-> Adding Template Files')
         addTemplateDatasetToDVC(projRoot)

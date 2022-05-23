@@ -3,7 +3,7 @@ from qml_environments.default_env.modules.inspect_data import getInfoFromDataPat
 from os import path
 
 def runEvent(event):
-    if(event.is_directory is True or not path.exists(event.src)): return
+    if(event.is_directory is True or not path.exists(event.src_path)): return
     (dataFileName, profilePath, profileTitle, fileExtension, metaPath) = getInfoFromDataPath(event.src_path)
     if(fileExtension == '.tmp' or dataFileName == '.DS_Store' or dataFileName == '.gitignore'): return
 

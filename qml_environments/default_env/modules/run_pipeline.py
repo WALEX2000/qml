@@ -144,6 +144,8 @@ def runCommand(ctx, pipeline, datapath, save_data, full_data, start_index, end_i
     X = pd.DataFrame(X)
     y = pd.DataFrame(y)
     if(full_data):
+        if isinstance(y_train, pd.Series):
+            y_train = pd.DataFrame(y_train)
         if(X.shape[1] == X_train.shape[1] and y.shape[1] == y_train.shape[1]):
             X.columns = list(X_train.columns)
             y.columns = list(y_train.columns)

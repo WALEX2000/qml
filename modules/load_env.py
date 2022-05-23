@@ -73,7 +73,6 @@ def checkEnv(envFilePath : str, projPath : str) -> dict:
     pythonVersion = envDict.get('python_version')
     if pythonVersion is not None and not checkValidPythonVersionFormat(pythonVersion):
         pythonVersion = None
-        print(f"Warning: python_version is '{envFilePath}' does not contain a valid format, and will be ignored")
     
     # Get the conf file and check the version (if they match, keep going, else give error)
     envConfPath = getEnvConfigPath(envName)
