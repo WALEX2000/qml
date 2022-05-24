@@ -151,6 +151,11 @@ def runCommand(ctx, pipeline, datapath, save_data, full_data, start_index, end_i
             y.columns = list(y_train.columns)
         fullDataset : pd.DataFrame = X.join(y)
     else:
+        if isinstance(y, pd.Series):
+            y = pd.DataFrame(y)
+        if isinstance(y_test, pd.Series):
+            y_test = pd.DataFrame(y_test)
+            
         if(X.shape[1] != X_test.shape[1] or y.shape[1] != y_test.shape[1]):
             print("ERROR: The pipeline you've run alters the shape of the data, as such if you wish to save the output you must run with the full-data option enabled.")
             return

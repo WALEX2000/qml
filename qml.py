@@ -100,8 +100,6 @@ if showStart:
 def edit():
     dir = str(Path(__file__).parents[0]) + "/qml_environments/"
     print(f'\nTo Create/Edit QML Environments, work in this directory: {dir}\n')
-    print(sys.version)
-    print(sys._base_executable)
 
 if __name__ == "__main__":
     cli()
