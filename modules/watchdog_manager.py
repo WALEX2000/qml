@@ -7,7 +7,7 @@ observer = Observer()
 class DirDog(FileSystemEventHandler):
     def __init__(self, eventsDict : dict):
         self.anyActions : list[str] = eventsDict.get('on_any_event')
-        self.createActions : list[str] = eventsDict.get('on_create')
+        self.createActions : list[str] = eventsDict.get('on_created')
         self.deleteActions : list[str] = eventsDict.get('on_deleted')
         self.modifyActions : list[str] = eventsDict.get('on_modified')
         self.moveActions : list[str] = eventsDict.get('on_moved')

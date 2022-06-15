@@ -32,7 +32,7 @@ def runCommand(pipeline, datapath):
     predictions = mlPipeline.predict(X_test)
     score = handler.score(y_test, predictions)
     print('Test Score:\n' + str(score))
-    # TODO Update .dvc file with the new score
+
     dvcPath = pipelinePath + '.dvc'
     metaInfo = getMetadata(dvcPath)
     if(metaInfo is None): return
