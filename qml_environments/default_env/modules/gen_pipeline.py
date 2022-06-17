@@ -1,6 +1,4 @@
 import click
-import nbformat.v4 as nbf
-from nbformat import write as nbfWrite
 from modules.general_utils import ProjectSettings
 
 NB_PATH = ProjectSettings.getProjPath() + '/src/ml_pipelines/'
@@ -8,6 +6,8 @@ NB_PATH = ProjectSettings.getProjPath() + '/src/ml_pipelines/'
 @click.argument('name', type=str)
 def runCommand(name):
     """Create a notetbook that generates an ML Pipeline, with the given name"""
+    import nbformat.v4 as nbf
+    from nbformat import write as nbfWrite
 
     notebook = nbf.new_notebook()
     text = f"""\

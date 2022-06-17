@@ -1,4 +1,3 @@
-import sys
 import click
 import os
 from modules.general_utils import DEFAULT_ENV, getEnvConfigPath, getModulePakage, getYAML, LOCAL_CONFIG_FILE_NAME, activateVenv
@@ -25,7 +24,9 @@ def addCommandsToQml(projRootPath : str, envConfDict : dict):
     def bindCommand(commandName):
         try:
             module = importlib.import_module(modulePackage + commandName)
-        except ModuleNotFoundError:
+        except ModuleNotFoundError as err:
+            print('ERROR WITH: ' + commandName)
+            print(err)
             return None
 
         func = module.runCommand

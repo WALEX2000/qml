@@ -1,7 +1,5 @@
 import click
 from os import path
-import nbformat.v4 as nbf
-from nbformat import write as nbfWrite
 from modules.general_utils import ProjectSettings
 
 NB_PATH = ProjectSettings.getProjPath() + '/src/data_analysis/dataset_generators/'
@@ -9,6 +7,9 @@ NB_PATH = ProjectSettings.getProjPath() + '/src/data_analysis/dataset_generators
 @click.argument('datapath', type=click.Path(exists=True, dir_okay=False))
 def runCommand(datapath):
     """ Generates a jupyter notebook that creates a handler for a raw data file, to be used in further ML operations"""
+    import nbformat.v4 as nbf
+    from nbformat import write as nbfWrite
+
     (_, filePathTail) = path.split(datapath) # Head is path info, tail is name info
     dataName, _ = path.splitext(filePathTail)
 

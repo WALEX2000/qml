@@ -111,7 +111,7 @@ def loadEnv(envDict : dict, projPath : str, extraArgs : "list[str]") -> dict:
             print(f"This environment requires a specific python version: '{pythonVersion}'")
             pythonPath = click.prompt('Please insert the path to the appropriate python executable: ', type=click.Path(exists=True, dir_okay=False))
 
-        builder = ExtendedEnvBuilder(system_site_packages=True, with_pip=True, prompt=projName, python=pythonPath)
+        builder = ExtendedEnvBuilder(system_site_packages=False, with_pip=True, prompt=projName, python=pythonPath)
         builder.create(venvPath)
 
     # Activate Venv

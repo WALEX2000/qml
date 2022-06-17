@@ -1,8 +1,6 @@
 import click
-from mlblocks import MLPipeline
 from modules.general_utils import ProjectSettings, CLIexecSync
 from qml_environments.default_env.modules.inspect_data import saveMetadata, hashFile
-from qml_custom.data_handler import DataHandler
 
 PIPELINE_DIR = ProjectSettings.getProjPath() + '/src/ml_pipelines/pipeline_annotations/'
 FITTED_PIPELINE_DIR = ProjectSettings.getProjPath() + '/src/ml_pipelines/fitted_pipelines/'
@@ -10,10 +8,13 @@ PRIMITIVES_PATH = ProjectSettings.getProjPath() + '/src/ml_pipelines/mlblocks_pr
 DATA_DIR = ProjectSettings.getProjPath() + '/data/'
 DATACONF_DIR = ProjectSettings.getProjPath() + '/data/data_conf/'
 
-def autoTune(mlPipeline : MLPipeline, extraArgs, start_index, outputNum, handler : DataHandler):
+def autoTune(mlPipeline, extraArgs, start_index, outputNum, handler):
     from btb.tuning import Tunable
     from btb import BTBSession
     import pandas as pd
+    from qml_custom.data_handler import DataHandler
+    from mlblocks import MLPipeline
+
     hyperParamsDict = mlPipeline.get_tunable_hyperparameters()
     tunablesDict = {}
     X, _, y, _ = handler.getSplit()
