@@ -39,7 +39,7 @@ def autoTune(mlPipeline, extraArgs, start_index, outputNum, handler):
             pred = mlPipeline.predict(X_val)
             score = handler.score(y_val, pred)
         except:
-            score = 0
+            score = -100
         return score
     
     session = BTBSession(tunables=tunablesDict,scorer=runPipeline, verbose=True)
@@ -68,6 +68,7 @@ def runCommand(ctx, pipeline, datapath, save_data, full_data, start_index, end_i
     from os import path
     from pickle import dump as pickle_dump
     import pandas as pd
+    from qml_custom.data_handler import DataHandler
     
     pipelinePath = PIPELINE_DIR + pipeline + "_pipeline.json"
     if(not path.exists(pipelinePath)):

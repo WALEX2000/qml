@@ -1,6 +1,7 @@
 import sys
 from os import path, makedirs
 import shutil
+import site
 from modules.general_utils import CLIexec, CLIcomm, ProjectSettings, getAssetPath
 
 def installDependencies(projRoot: str):
@@ -44,6 +45,10 @@ def addCustomPackages(projRoot: str):
     data_handler_asset_path = getAssetPath('data_handler.py')
     data_handler_dest = destFolder + 'data_handler.py'
     shutil.copyfile(data_handler_asset_path, data_handler_dest)
+
+    paths_assetPath = getAssetPath('path.pth')
+    dest_paths_file = site_packages + '/path.pth'
+    shutil.copyfile(paths_assetPath, dest_paths_file)
 
 def runProcess(args : "list[str]"):
     projRoot = ProjectSettings.getProjPath()

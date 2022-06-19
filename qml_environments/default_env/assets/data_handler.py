@@ -1,5 +1,5 @@
 import pandas as pd
-import pickle
+import dill as pickle
 from os import path
 
 def readCSV(dataPath):

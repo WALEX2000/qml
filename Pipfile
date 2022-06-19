@@ -11,6 +11,7 @@ qml = {editable = true, path = "."}
 watchdog = "*"
 
 [dev-packages]
+ipykernel = "*"
 
 [requires]
 python_version = "3"
