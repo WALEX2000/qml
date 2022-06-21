@@ -8,12 +8,10 @@ PRIMITIVES_PATH = ProjectSettings.getProjPath() + '/src/ml_pipelines/mlblocks_pr
 DATA_DIR = ProjectSettings.getProjPath() + '/data/'
 DATACONF_DIR = ProjectSettings.getProjPath() + '/data/data_conf/'
 
-def autoTune(mlPipeline, extraArgs, start_index, outputNum, handler):
+def autoTune(mlPipeline, extraArgs, start_index, outputNum, handler, iterations = 100):
     from btb.tuning import Tunable
     from btb import BTBSession
     import pandas as pd
-    from qml_custom.data_handler import DataHandler
-    from mlblocks import MLPipeline
 
     hyperParamsDict = mlPipeline.get_tunable_hyperparameters()
     tunablesDict = {}
@@ -39,11 +37,14 @@ def autoTune(mlPipeline, extraArgs, start_index, outputNum, handler):
             pred = mlPipeline.predict(X_val)
             score = handler.score(y_val, pred)
         except:
-            score = -100
+            if handler.maximize():
+                score = -100000
+            else:
+                score = 100000
         return score
     
-    session = BTBSession(tunables=tunablesDict,scorer=runPipeline, verbose=True)
-    best_proposal = session.run(100)
+    session = BTBSession(tunables=tunablesDict,scorer=runPipeline, verbose=True, maximize=handler.maximize())
+    best_proposal = session.run(iterations)
     print('Validation Score: ' + str(best_proposal['score']))
     return best_proposal
 
@@ -54,7 +55,7 @@ def autoTune(mlPipeline, extraArgs, start_index, outputNum, handler):
 @click.option('--start-index', '-si', type=int, help='The index of the primitive in which to start running the pipeline', default=0)
 @click.option('--end-index', '-ei', type=int, help='The index of the primitive in which to stop running the pipeline', default=-1)
 @click.option('--save-pipeline', '-sp', is_flag=True, help='Save the pipeline after it has been trained on the given data')
-@click.option('--auto-tune', '-at', is_flag=True, help='Optimize the ML Networks Hyperparameters automatically')
+@click.option('--auto-tune', '-at', type=int, help='Optimize the ML Networks Hyperparameters automatically', default = -1)
 @click.pass_context
 def runCommand(ctx, pipeline, datapath, save_data, full_data, start_index, end_index, save_pipeline, auto_tune):
     """Runs the given pipeline with the given data, and, optionally, with the given extra arguments"""
@@ -98,9 +99,9 @@ def runCommand(ctx, pipeline, datapath, save_data, full_data, start_index, end_i
     else:
         outputNum = end_index
     
-    if(auto_tune):
+    if(auto_tune != -1):
         print("...Starting Pipeline Auto-Tune")
-        best_proposal = autoTune(mlPipeline, extraArgs, start_index, outputNum, handler)
+        best_proposal = autoTune(mlPipeline, extraArgs, start_index, outputNum, handler, auto_tune)
         newHyperParameters = {best_proposal['name'] : best_proposal['config']}
         mlPipeline.set_hyperparameters(newHyperParameters)
         print("...Pipeline Auto-Tune Complete!")

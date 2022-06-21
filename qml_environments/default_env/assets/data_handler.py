@@ -19,13 +19,14 @@ class DataHandler:
 
         return dataHandler
 
-    def __init__(self, targetVarName, scoringFunc, dataPath="", readDfFunc=pd.read_csv, testRatio=0.25):
+    def __init__(self, targetVarName, scoringFunc, dataPath="", readDfFunc=pd.read_csv, testRatio=0.25, maximize = True):
         self._targetVarName = targetVarName
         self._scoringFunc = scoringFunc
         self._readDfFunc = readDfFunc
         self._testRatio = testRatio
         self._dataframe = None
         self._dataPath = dataPath
+        self._maximize = maximize
     
     def setDataPath(self, dataPath):
         self._dataPath = dataPath
@@ -49,6 +50,9 @@ class DataHandler:
 
     def score(self, trueLabels, predictions):
         return self._scoringFunc(trueLabels, predictions)
+    
+    def maximize(self):
+        return self._maximize
     
     def save(self, handlerPath):
         self._dataframe = None # The whole point is that the data is not saved here, but stays on the file        
