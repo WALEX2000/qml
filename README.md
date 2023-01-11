@@ -1,4 +1,6 @@
 # QML
+Qml is a CLI tool that enables AI Engineers to create and manage simple Automated ML Pipelines, for experimental or small-scope local ML projects.
+
 ## Setup
 To install for prod. run:
     rm -rf build dist *.egg-info        (To remove previous build)
@@ -19,4 +21,3 @@ Here you'll place all assets to be used inside your project
 
 In the modules directory, create a sub-directory with the following name: <env-name>-modules
 All modules (commands, event processes, and setup processes), should be placed inside this new folder.
-(TODO: This might not be a good idea, as I'll have to duplicate files if i want to re-use them from other pipelines)
